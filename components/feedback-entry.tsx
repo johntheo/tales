@@ -2,24 +2,21 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { FeedbackCategory } from "@/components/feedback-category"
 
+interface Metric {
+  title: string
+  score: number
+  feedback: string
+}
+
 interface FeedbackEntryProps {
-  feedback: {
-    id: number
-    title: string
-    description: string
-    image: string
-    timeAgo: string
-    categories: {
-      title: string
-      description: string
-      image: string
-    }[]
-  }
+  title: string
+  description: string
+  metrics: Metric[]
   isLoaded: boolean
   delay: number
 }
 
-export function FeedbackEntry({ feedback, isLoaded, delay }: FeedbackEntryProps) {
+export function FeedbackEntry({ title, description, metrics, isLoaded, delay }: FeedbackEntryProps) {
   return (
     <div
       className={`transition-opacity duration-500 transform ${
@@ -27,65 +24,78 @@ export function FeedbackEntry({ feedback, isLoaded, delay }: FeedbackEntryProps)
       }`}
       style={{ transitionDelay: `${delay}s` }}
     >
-      {/* File Section */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold mb-1">Your file</h2>
-        <p className="text-[#71717a] text-sm mb-4">{feedback.timeAgo}</p>
-
-        <div className="flex bg-white rounded-lg overflow-hidden shadow-sm">
-          {feedback.title.includes("Handbook") ? (
-            <div className="w-full aspect-video relative bg-[#FFFFC2] flex items-center justify-center">
-              <div className="text-center p-4">
-                <div className="text-2xl font-serif mb-2">Handbook°</div>
-                <div className="text-xs mt-4">Combo</div>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full aspect-video relative">
-              <Image src={feedback.image || "/placeholder.svg"} alt={feedback.title} fill className="object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-end p-4">
-                <div className="text-white">
-                  <div className="text-4xl font-light leading-tight">
-                    Trend<span className="text-sm align-top">2025</span>
-                  </div>
-                  <div className="text-xl font-light leading-tight">Report</div>
-                </div>
-              </div>
-            </div>
-          )}
-          <div className="p-6 flex flex-col justify-between flex-1">
-            <div>
-              <h3 className="font-bold text-lg mb-2">{feedback.title}</h3>
-              <p className="text-sm text-[#71717a] leading-relaxed">{feedback.description}</p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-fit rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground"
-            >
-              Download your file
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Overall Section */}
-      <div className="mb-10">
-        <h2 className="text-xl font-bold mb-2">Overall</h2>
-        <p className="text-[#71717a] mb-6">Good views to grow your expertise.</p>
-
-        {/* Feedback Categories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {feedback.categories.map((category, index) => (
-            <FeedbackCategory
-              key={`${feedback.id}-${category.title}`}
-              title={category.title}
-              description={category.description}
-              image={category.image}
-              delay={delay + 0.1 + index * 0.05}
-              className="reveal-item"
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex gap-6">
+          {/* Preview Image */}
+          <div className="w-32 h-32 bg-gray-200 rounded-lg overflow-hidden relative flex-shrink-0">
+            <Image
+              src="/placeholder.svg"
+              alt={title}
+              fill
+              className="object-cover"
             />
-          ))}
+          </div>
+
+          {/* Content */}
+          <div className="flex-grow">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-semibold">{title}</h3>
+                <p className="text-sm text-gray-600 mt-1">{description}</p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  Download your file
+                </Button>
+                <Button variant="default" size="sm" className="bg-black text-white hover:bg-gray-800">
+                  Talk to a professional
+                </Button>
+              </div>
+            </div>
+
+            {/* Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+              {metrics.map((metric, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6">
+                      {metric.title === "Visual Consistency" && (
+                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor">
+                          <path d="M2 12h4m16 0h-4M12 2v4m0 16v-4" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                      )}
+                      {metric.title === "Content Clarity" && (
+                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor">
+                          <path d="M4 6h16M4 12h16M4 18h16" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                      )}
+                      {metric.title === "Storytelling" && (
+                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor">
+                          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                      )}
+                      {metric.title === "Data Visualization" && (
+                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor">
+                          <path d="M16 8v8m-8-6v6M4 4v16h16" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                      )}
+                    </div>
+                    <h4 className="font-medium">{metric.title}</h4>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-grow h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-black"
+                        style={{ width: `${(metric.score / 5) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium">{metric.score}/5</span>
+                  </div>
+                  <p className="text-sm text-gray-600">{metric.feedback}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

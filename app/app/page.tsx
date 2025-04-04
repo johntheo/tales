@@ -107,11 +107,13 @@ export default function AppPage() {
           <Button variant="ghost" onClick={scrollToFeatures} className="text-sm font-medium">
             Solution
           </Button>
-          <Link href="/signup">
-            <Button variant="default" className="text-sm font-medium bg-black text-white hover:bg-gray-800">
-              Get Started Free
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/login">
+              <Button variant="default" size="lg" className="bg-black text-white hover:bg-gray-800 min-w-[200px]">
+                Get Started Free
+              </Button>
+            </Link>
+          </div>
         </nav>
       </header>
 

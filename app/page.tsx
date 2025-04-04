@@ -102,7 +102,7 @@ export default function Home() {
           <Button variant="ghost" onClick={scrollToFeatures} className="text-sm font-medium">
             Solution
           </Button>
-          <Link href="/signup">
+          <Link href="/login">
             <Button variant="default" className="text-sm font-medium bg-black text-white hover:bg-gray-800">
               Get Started Free
             </Button>
@@ -122,7 +122,7 @@ export default function Home() {
             <Button variant="ghost" onClick={scrollToFeatures} className="text-sm font-medium w-full justify-start">
               Solution
             </Button>
-            <Link href="/signup" className="w-full">
+            <Link href="/login" className="w-full">
               <Button variant="default" className="text-sm font-medium bg-black text-white hover:bg-gray-800 w-full">
                 Get Started Free
               </Button>
@@ -156,9 +156,9 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link href="/app">
+              <Link href="/login">
                 <Button variant="default" size="lg" className="bg-black text-white hover:bg-gray-800 min-w-[200px]">
-                  Start Free Trial
+                  Get Started Free
                 </Button>
               </Link>
               <Button variant="outline" size="lg" onClick={scrollToFeatures} className="min-w-[200px]">
@@ -181,11 +181,14 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 mt-6">
-                <Link href="/app">
+                <Link href="/login">
                   <Button variant="default" size="lg" className="min-w-[180px]">
                     Try For Free
                   </Button>
                 </Link>
+                <Button variant="outline" size="lg" onClick={() => setTrustModalOpen(true)} className="min-w-[180px]">
+                  Learn More
+                </Button>
               </div>
             </div>
             <div className="bg-gray-200 rounded-lg overflow-hidden aspect-video md:scale-110 lg:scale-125 transform origin-center shadow-xl mt-6 md:mt-0">
@@ -403,11 +406,14 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/app">
+              <Link href="/login">
                 <Button variant="default" size="lg" className="bg-black text-white hover:bg-gray-800 min-w-[200px]">
                   Join Community Free
                 </Button>
               </Link>
+              <Button variant="outline" size="lg" onClick={scrollToCommunity} className="min-w-[200px]">
+                View Success Stories
+              </Button>
             </div>
           </div>
         </section>
