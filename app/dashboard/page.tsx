@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -12,19 +12,53 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { UploadForm } from "@/components/upload-form"
+import { X } from "lucide-react"
 
 export default function DashboardPage() {
-  const [isUploading, setIsUploading] = useState(false)
-  const [hasFeedback, setHasFeedback] = useState(false)
+  const [feedbacks, setFeedbacks] = useState<any[]>([])
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [showNewFeedback, setShowNewFeedback] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    // Check if we're coming from the upload flow
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("showFeedback") === "true") {
+      setShowNewFeedback(true)
+      // Clean up the URL
+      window.history.replaceState({}, "", "/dashboard")
+    }
+  }, [])
 
   const handleFileUpload = async (file: File) => {
     setIsUploading(true)
-    // Simulating file upload - will be replaced with actual upload later
-    setTimeout(() => {
+    try {
+      // Simulate file upload and processing
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Add the new feedback to the list
+      const newFeedback = {
+        id: Date.now(),
+        title: file.name,
+        date: new Date().toISOString(),
+        status: "completed",
+        metrics: [
+          { title: "Story Structure", score: 85, feedback: "Well-organized narrative flow" },
+          { title: "Visual Design", score: 92, feedback: "Excellent use of visual hierarchy" },
+          { title: "Content Clarity", score: 88, feedback: "Clear and concise messaging" }
+        ]
+      }
+      
+      setFeedbacks(prev => [newFeedback, ...prev])
+      setShowNewFeedback(true)
+    } finally {
       setIsUploading(false)
-    }, 2000)
+      setIsUploadModalOpen(false)
+    }
   }
 
   const handleLogout = () => {
@@ -96,134 +130,51 @@ export default function DashboardPage() {
 
         {/* Main Content */}
         <main className="flex-1 p-8">
-          {hasFeedback ? (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Your latest feedback is here!</h2>
-              <p className="text-gray-600 mb-6">
-                We've reviewed your submission. Here's an overview of your presentation's performance and key areas for improvement.
-              </p>
-
-              {/* File Preview and Actions */}
-              <div className="flex items-start gap-6 mb-8">
-                <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <Image
-                    src="/placeholder.svg"
-                    alt="Document preview"
-                    width={100}
-                    height={100}
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-medium mb-1">das</h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Filmmaking Trend Report 25 offers insights on current trends and highlights crucial information for filmmakers.
-                  </p>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">Download your file</Button>
-                    <Button variant="default" size="sm" className="bg-black text-white hover:bg-gray-800">
-                      Talk to a professional
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Metrics Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Visual Consistency */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor">
-                      <path d="M2 12h4m16 0h-4M12 2v4m0 16v-4" strokeWidth="2" strokeLinecap="round"/>
-                    </svg>
-                    <h4 className="font-medium">Visual Consistency</h4>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-grow h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-black w-4/5" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main>
+              {showNewFeedback && feedbacks.length > 0 ? (
+                <div className="bg-white rounded-lg p-6 mb-8 animate-in fade-in slide-in-from-bottom-4">
+                  <div className="max-w-3xl mx-auto">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-2xl font-bold">Latest Feedback</h2>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setShowNewFeedback(false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <span className="text-sm font-medium">4/5</span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Great use of color palette, but some slides have inconsistent typography. Try using a single font family to maintain consistency.
-                  </p>
-                </div>
 
-                {/* Content Clarity */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor">
-                      <path d="M4 6h16M4 12h16M4 18h16" strokeWidth="2" strokeLinecap="round"/>
-                    </svg>
-                    <h4 className="font-medium">Content Clarity</h4>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-grow h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-black w-3/5" />
+                    <div className="space-y-6">
+                      {feedbacks[0].metrics.map((metric: any, index: number) => (
+                        <div key={index} className="bg-gray-50 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-medium">{metric.title}</h3>
+                            <span className="text-sm text-gray-500">{metric.score}/100</span>
+                          </div>
+                          <div className="relative h-2 bg-gray-200 rounded-full mb-2">
+                            <div
+                              className="absolute left-0 top-0 h-full bg-black rounded-full transition-all duration-1000"
+                              style={{ width: `${metric.score}%` }}
+                            />
+                          </div>
+                          <p className="text-sm text-gray-600">{metric.feedback}</p>
+                        </div>
+                      ))}
                     </div>
-                    <span className="text-sm font-medium">3/5</span>
                   </div>
-                  <p className="text-sm text-gray-600">
-                    Your key points are strong, but consider reducing text in some slides for better readability. Using bullet points could help organize information.
-                  </p>
                 </div>
-
-                {/* Storytelling */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor">
-                      <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth="2" strokeLinecap="round"/>
-                    </svg>
-                    <h4 className="font-medium">Storytelling</h4>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-grow h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-black w-4/5" />
-                    </div>
-                    <span className="text-sm font-medium">4/5</span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    The narrative is compelling, but the flow between sections could be smoother. A clear transition slide between topics would help guide the viewer.
-                  </p>
-                </div>
-
-                {/* Data Visualization */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor">
-                      <path d="M16 8v8m-8-6v6M4 4v16h16" strokeWidth="2" strokeLinecap="round"/>
-                    </svg>
-                    <h4 className="font-medium">Data Visualization</h4>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-grow h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-black w-3/5" />
-                    </div>
-                    <span className="text-sm font-medium">3/5</span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Your charts and graphs are informative, but the labels could be clearer. Try increasing contrast and using more intuitive color coding.
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            // Empty State
-            <div className="bg-white rounded-lg shadow p-8 text-center">
-              <div className="max-w-md mx-auto">
-                <h2 className="text-xl font-semibold mb-4">Welcome to Tales!</h2>
-                <p className="text-gray-600 mb-8">
-                  Upload your first presentation to get detailed feedback from our experts. We'll help you create compelling narratives that captivate your audience.
-                </p>
-                <Button
-                  onClick={() => setIsUploadModalOpen(true)}
-                  className="bg-black text-white hover:bg-gray-800"
-                >
-                  Upload Presentation
-                </Button>
-              </div>
-            </div>
-          )}
+              ) : (
+                <UploadForm
+                  onSubmit={async (data) => {
+                    if (data.file) {
+                      await handleFileUpload(data.file)
+                    }
+                  }}
+                />
+              )}
+            </main>
+          </div>
         </main>
       </div>
 

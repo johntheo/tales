@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ArrowLeft } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -20,7 +21,15 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center">
-      <div className="w-full max-w-md p-8">
+      <div className="w-full max-w-md p-8 relative">
+        {/* Back Button */}
+        <button
+          onClick={() => router.back()}
+          className="absolute left-8 top-8 text-gray-500 hover:text-gray-900 flex items-center gap-2 transition-colors"
+        >
+          <ArrowLeft size={20} />
+        </button>
+
         {/* Logo */}
         <div className="mb-12 text-center">
           <Link href="/" className="inline-block">
