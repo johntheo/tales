@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { formatDistanceToNow } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Menu, Upload, Settings, LogOut, Trash2, X } from "lucide-react"
@@ -10,6 +11,13 @@ import { UploadForm } from "@/components/upload-form"
 import { FeedbackEntry } from "@/components/feedback-entry"
 import { FeedbackProcessing } from "@/components/feedback-processing"
 import PeelCard from "@/components/peel-component"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,6 +58,7 @@ export default function DashboardPage() {
   const [showNewFeedback, setShowNewFeedback] = useState(false)
   const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([])
   const [currentFeedback, setCurrentFeedback] = useState<FeedbackItem | null>(null)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const isMobile = useMediaQuery("(max-width: 768px)")
 
   const createNewFeedback = () => {
@@ -429,33 +438,30 @@ export default function DashboardPage() {
 
   const userEmail = "john@example.com"
 
-  return (
-    <div className="flex h-screen bg-background">
-      {/* Left sidebar */}
-      <div className="flex flex-col w-[240px] border-r border-border bg-card">
-        {/* Top section with logo and menu */}
+  // Sidebar content component to reuse in both desktop and mobile
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
         <div className="flex items-center h-12 px-2 border-b border-border">
-          <div className="flex items-center gap-2 px-2">
+        <div className="flex items-center">
             <Image
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%5Btales%5D-logo-cr5dVmAyZBoyYbXBQ1bLbyRXtpQGBW.svg"
               alt="Tales"
               width={70}
               height={70}
             />
-          </div>
-          <div className="flex-1" />
           <Button 
             variant="ghost"
             size="sm"
-            className="h-8 text-xs"
+            className="h-8 text-xs ml-2"
             onClick={createNewFeedback}
           >
             <Upload className="mr-1 h-3 w-3" />
           </Button>
         </div>
+        <div className="flex-1" />
+        </div>
 
-        {/* Side menu */}
-        <div className="flex-1 p-2">
+      <div className="flex-1 overflow-auto p-2">
           <h2 className="text-sm font-medium mb-2">
             Recent Feedback
           </h2>
@@ -470,25 +476,25 @@ export default function DashboardPage() {
                   className={`w-full justify-start text-xs py-2 px-2 ${
                     currentFeedback?.id === feedback.id ? 'bg-accent' : ''
                   }`}
-                  onClick={() => handleFeedbackSelect(feedback)}
+                onClick={() => {
+                  handleFeedbackSelect(feedback)
+                  if (isMobile) setIsDrawerOpen(false)
+                }}
                 >
                   <div className="flex flex-col items-start w-full min-w-0">
                     <span className="font-medium truncate w-[180px] text-left">
                       {feedback.status === 'pending' ? 'New Feedback...' : feedback.title}
                     </span>
                     <span className="text-muted-foreground text-[10px]">
-                      {feedback.date.toLocaleDateString()}
+                    {formatDistanceToNow(feedback.date, { addSuffix: true })}
                     </span>
                   </div>
                 </Button>
-                {/* Only show delete button if it's not the last pending feedback */}
                 {!(feedbacks.length === 1 && feedback.status === 'pending') && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 ${
-                      isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                    } transition-opacity`}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => handleDeleteFeedback(feedback.id, e)}
                   >
                     <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
@@ -499,8 +505,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* User profile at bottom */}
-        <div className="p-2 border-t border-border">
+      <div className="mt-auto p-2 border-t border-border">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="w-full h-8 px-2 justify-start">
@@ -527,11 +532,52 @@ export default function DashboardPage() {
           </DropdownMenu>
         </div>
       </div>
+  )
+
+  return (
+    <div className="flex h-screen bg-background">
+      {/* Desktop sidebar */}
+      {!isMobile && (
+        <div className="flex flex-col w-[240px] border-r border-border bg-card">
+          <SidebarContent />
+        </div>
+      )}
+
+      {/* Mobile header */}
+      {isMobile && (
+        <div className="fixed top-0 left-0 right-0 h-14 border-b border-border bg-card z-10 flex items-center px-4">
+          <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="mr-2">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[240px] p-0">
+              <SidebarContent />
+            </SheetContent>
+          </Sheet>
+          <Image
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%5Btales%5D-logo-cr5dVmAyZBoyYbXBQ1bLbyRXtpQGBW.svg"
+            alt="Tales"
+            width={50}
+            height={50}
+          />
+          <div className="flex-1" />
+          <Button 
+            variant="ghost"
+            size="icon"
+            className="ml-2"
+            onClick={createNewFeedback}
+          >
+            <Upload className="h-5 w-5" />
+          </Button>
+        </div>
+      )}
 
       {/* Main content area */}
-      <div className="flex-1 overflow-auto">
+      <div className={`flex-1 overflow-auto ${isMobile ? 'pt-14' : ''}`}>
         {showNewFeedback && currentFeedback?.status === 'ready' ? (
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             <FeedbackEntry
               fileName={currentFeedback.title}
               description="Here's what our AI found in your presentation"
@@ -565,8 +611,8 @@ export default function DashboardPage() {
             gradient="linear-gradient(135deg, #6B63B5 0%, #5D56A6 100%)"
             name="Your Feedback"
             role="is ready"
-            width={640}
-            height={360}
+            width={isMobile ? 320 : 640}
+            height={isMobile ? 180 : 360}
           />
         </div>
       )}

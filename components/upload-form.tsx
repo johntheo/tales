@@ -58,13 +58,16 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setIsProcessing(true)
     
-    // Simulate API call
     if (link) {
-      onSubmit({ link })
+      // Add https:// if no protocol is specified
+      const formattedLink = link.startsWith('http://') || link.startsWith('https://')
+        ? link
+        : `https://${link}`
+      
+      onSubmit({ link: formattedLink })
     } else if (file) {
       onSubmit({ file })
     }
@@ -83,7 +86,7 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
             <Label htmlFor="workLink" className="text-base font-medium">Link</Label>
             <Input
               id="workLink"
-              type="url"
+              type="text"
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="Link to your work"
