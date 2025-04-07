@@ -48,11 +48,6 @@ export function Header({ dashboardPage = false, feedbackPage = false }: HeaderPr
           <Button variant="ghost" className="text-sm" onClick={() => setTrustModalOpen(true)}>
             Trust and Security
           </Button>
-          {!dashboardPage && !feedbackPage && (
-            <Button variant="ghost" className="text-sm">
-              Solution
-            </Button>
-          )}
           <Link href="/login">
             <Button
               variant="default"

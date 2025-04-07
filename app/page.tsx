@@ -387,7 +387,7 @@ export default function Home() {
                   LinkedIn
                 </Link>
                 <Link
-                  href="/contact"
+                  href="mailto:detales.app@gmail.com"
                   className="text-[#09090b] hover:text-[#09090b]/80 transition-colors text-sm font-medium"
                 >
                   Contact
