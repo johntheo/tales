@@ -10,11 +10,15 @@ import { FeedbackProcessing } from "./feedback-processing"
 
 interface UploadFormProps {
   onSubmit: (data: { link?: string; file?: File }) => void
+  initialData?: {
+    link?: string
+    file?: File
+  }
 }
 
-export function UploadForm({ onSubmit }: UploadFormProps) {
-  const [link, setLink] = useState("")
-  const [file, setFile] = useState<File | null>(null)
+export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
+  const [link, setLink] = useState(initialData?.link || "")
+  const [file, setFile] = useState<File | null>(initialData?.file || null)
   const [isDragging, setIsDragging] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -68,113 +72,111 @@ export function UploadForm({ onSubmit }: UploadFormProps) {
 
   return (
     <>
-      <div className="bg-white rounded-3xl p-8 shadow-sm">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4">Let's upgrade your first story!</h1>
-          <p className="text-gray-600 text-lg mb-8">
-            Whether it's a portfolio, case study, or presentation of your work, we can provide tailored feedback to elevate your storytelling and design.
-          </p>
+      <div className="w-full">
+        <h1 className="text-4xl font-bold mb-4">Let's upgrade your first story!</h1>
+        <p className="text-muted-foreground text-lg mb-8">
+          Whether it's a portfolio, case study, or presentation of your work, we can provide tailored feedback to elevate your storytelling and design.
+        </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <Label htmlFor="workLink" className="text-base font-medium">Link</Label>
-              <Input
-                id="workLink"
-                type="url"
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-                placeholder="Link to your work"
-                className="mt-2"
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label htmlFor="workLink" className="text-base font-medium">Link</Label>
+            <Input
+              id="workLink"
+              type="url"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="Link to your work"
+              className="mt-2"
+            />
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-background text-muted-foreground">OR CONTINUE WITH</span>
+            </div>
+          </div>
+
+          <div
+            className={`border-2 border-dashed rounded-xl p-8 transition-colors ${
+              isDragging ? "border-foreground bg-accent" : "border-border"
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <div className="flex flex-col items-center justify-center text-center">
+              <input
+                type="file"
+                id="fileInput"
+                className="hidden"
+                onChange={handleFileSelect}
+                accept=".pdf,.ppt,.pptx,.key"
               />
-            </div>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">OR CONTINUE WITH</span>
-              </div>
-            </div>
-
-            <div
-              className={`border-2 border-dashed rounded-xl p-8 transition-colors ${
-                isDragging ? "border-gray-400 bg-gray-50" : "border-gray-200"
-              }`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-            >
-              <div className="flex flex-col items-center justify-center text-center">
-                <input
-                  type="file"
-                  id="fileInput"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                  accept=".pdf,.ppt,.pptx,.key"
+              <div className="mb-4">
+                <Image
+                  src="/upload-icon.svg"
+                  alt="Upload"
+                  width={48}
+                  height={48}
                 />
-                <div className="mb-4">
-                  <Image
-                    src="/upload-icon.svg"
-                    alt="Upload"
-                    width={48}
-                    height={48}
-                  />
-                </div>
-                {file ? (
-                  <div className="text-sm text-gray-600 w-full">
-                    <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gray-100 rounded">
-                          <Image
-                            src="/document-icon.svg"
-                            alt="Document"
-                            width={20}
-                            height={20}
-                          />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{file.name}</p>
-                          <p className="text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={handleRemoveFile}
-                        className="text-gray-500 hover:text-red-600 hover:bg-red-50 gap-2"
-                      >
-                        <X size={16} />
-                        Remove
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-gray-600 mb-4">Choose a file or drag & drop it here</p>
-                    <label htmlFor="fileInput">
-                      <Button type="button" variant="outline" className="cursor-pointer">
-                        Browse Files
-                      </Button>
-                    </label>
-                  </>
-                )}
               </div>
+              {file ? (
+                <div className="text-sm text-muted-foreground w-full">
+                  <div className="flex items-center justify-between bg-accent/50 p-4 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-background rounded">
+                        <Image
+                          src="/document-icon.svg"
+                          alt="Document"
+                          width={20}
+                          height={20}
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium">{file.name}</p>
+                        <p className="text-sm text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={handleRemoveFile}
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 gap-2"
+                    >
+                      <X size={16} />
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-muted-foreground mb-4">Choose a file or drag & drop it here</p>
+                  <label htmlFor="fileInput">
+                    <Button type="button" variant="outline" className="cursor-pointer">
+                      Browse Files
+                    </Button>
+                  </label>
+                </>
+              )}
             </div>
+          </div>
 
-            <Button 
-              type="submit"
-              className={`w-full h-12 text-base ${
-                link || file 
-                  ? "bg-black text-white hover:bg-gray-800" 
-                  : "bg-gray-400 text-white hover:bg-gray-500"
-              }`}
-              disabled={!link && !file}
-            >
-              Submit for Review
-            </Button>
-          </form>
-        </div>
+          <Button 
+            type="submit"
+            className={`w-full h-12 text-base ${
+              link || file 
+                ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                : "bg-muted text-muted-foreground cursor-not-allowed"
+            }`}
+            disabled={!link && !file}
+          >
+            Submit for Review
+          </Button>
+        </form>
       </div>
 
       <FeedbackProcessing 
