@@ -9,6 +9,7 @@ import FloatingCards from "@/components/floating-cards"
 import CommunityGallery from "@/components/community-gallery"
 import { TrustSecurityModal } from "@/components/trust-security-modal"
 import FeaturesSection from "@/components/features-section"
+import { Header } from "@/components/header"
 
 // Avatar images for community section
 const communityImages = [
@@ -74,73 +75,17 @@ export default function Home() {
 
   return (
     <>
-      {/* Header */}
-      <header className="container mx-auto px-4 py-4 flex justify-between items-center relative z-50">
-        <Link href="/" className="logo">
-          <Image
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%5Btales%5D-logo-cr5dVmAyZBoyYbXBQ1bLbyRXtpQGBW.svg"
-            alt="tales"
-            width={80}
-            height={28}
-          />
-        </Link>
-
-        {/* Mobile menu button */}
-        <button
-          className="md:hidden p-2 focus:outline-none"
-          onClick={toggleMobileMenu}
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-
-        {/* Desktop navigation */}
-        <nav className="hidden md:flex items-center gap-6">
-          <Button variant="ghost" onClick={() => setTrustModalOpen(true)} className="text-sm font-medium">
-            Trust and Security
-          </Button>
-          <Button variant="ghost" onClick={scrollToFeatures} className="text-sm font-medium">
-            Solution
-          </Button>
-          <Link href="/login">
-            <Button variant="default" className="text-sm font-medium bg-black text-white hover:bg-gray-800">
-              Get Started Free
-            </Button>
-          </Link>
-        </nav>
-
-        {/* Mobile navigation */}
-        {mobileMenuOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white shadow-lg p-4 flex flex-col gap-2 md:hidden z-50">
-            <Button
-              variant="ghost"
-              onClick={() => setTrustModalOpen(true)}
-              className="text-sm font-medium w-full justify-start"
-            >
-              Trust and Security
-            </Button>
-            <Button variant="ghost" onClick={scrollToFeatures} className="text-sm font-medium w-full justify-start">
-              Solution
-            </Button>
-            <Link href="/login" className="w-full">
-              <Button variant="default" className="text-sm font-medium bg-black text-white hover:bg-gray-800 w-full">
-                Get Started Free
-              </Button>
-            </Link>
-          </div>
-        )}
-      </header>
-
-      <main className="flex-grow">
+      <Header />
+      <main className="flex-grow pt-[72px] md:pt-[80px]">
         {/* Hero Section */}
-        <section className="container mx-auto px-4 pt-12 md:pt-16 pb-16 md:pb-24 text-center relative">
-          <h1 className="text-3xl md:text-5xl font-bold mb-8 md:mb-16 max-w-4xl mx-auto relative z-0">
+        <section className="container mx-auto px-4 pt-8 md:pt-12 pb-12 md:pb-16 text-center relative">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 md:mb-12 max-w-4xl mx-auto relative z-0">
             <div>A place to create</div>
             <div>your masterpiece.</div>
           </h1>
 
           <div
-            className="-mt-16 md:-mt-24 relative z-10 overflow-visible"
+            className="-mt-12 md:-mt-16 relative z-10 overflow-visible"
             style={{ perspective: "1000px", transformStyle: "preserve-3d" }}
           >
             <FloatingCards />
@@ -150,18 +95,18 @@ export default function Home() {
             className="mt-4 opacity-0 animate-fade-in relative z-0"
             style={{ animationDelay: "1s", animationFillMode: "forwards" }}
           >
-            <p className="max-w-2xl mx-auto mb-4 text-base md:text-lg px-4">
+            <p className="max-w-2xl mx-auto mb-6 text-base md:text-lg px-4">
               Upload your presentations, get <span className="font-bold">human powered AI feedback</span>, and create
               compelling narratives that captivate your audience.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/login">
-                <Button variant="default" size="lg" className="bg-black text-white hover:bg-gray-800 min-w-[200px]">
+                <Button variant="default" size="lg" className="bg-black text-white hover:bg-gray-800 w-full sm:w-auto min-w-[200px]">
                   Get Started Free
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" onClick={scrollToFeatures} className="min-w-[200px]">
+              <Button variant="outline" size="lg" onClick={scrollToFeatures} className="w-full sm:w-auto min-w-[200px]">
                 See How It Works
               </Button>
             </div>
@@ -169,9 +114,9 @@ export default function Home() {
         </section>
 
         {/* Master Storytelling Section */}
-        <section className="container mx-auto px-4 md:px-8 py-16 md:py-24 bg-gray-50">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
-            <div>
+        <section className="container mx-auto px-4 md:px-8 py-12 md:py-16 bg-gray-50">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div className="order-2 md:order-1">
               <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Master the Art of Storytelling</h2>
               <div className="max-w-md">
                 <p className="mb-4 text-sm md:text-base">
@@ -180,18 +125,8 @@ export default function Home() {
                   study, or pitch deck, we help you craft narratives that open doors.
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4 mt-6">
-                <Link href="/login">
-                  <Button variant="default" size="lg" className="min-w-[180px]">
-                    Try For Free
-                  </Button>
-                </Link>
-                <Button variant="outline" size="lg" onClick={() => setTrustModalOpen(true)} className="min-w-[180px]">
-                  Learn More
-                </Button>
-              </div>
             </div>
-            <div className="bg-gray-200 rounded-lg overflow-hidden aspect-video md:scale-110 lg:scale-125 transform origin-center shadow-xl mt-6 md:mt-0">
+            <div className="order-1 md:order-2 bg-gray-200 rounded-lg overflow-hidden aspect-video md:scale-105 lg:scale-110 transform origin-center shadow-xl">
               <iframe
                 className="w-full h-full"
                 src="https://www.youtube.com/embed/ZDh7dPmczoU"
@@ -411,9 +346,9 @@ export default function Home() {
                   Join Community Free
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" onClick={scrollToCommunity} className="min-w-[200px]">
+              {/* <Button variant="outline" size="lg" onClick={scrollToCommunity} className="min-w-[200px]">
                 View Success Stories
-              </Button>
+              </Button> */}
             </div>
           </div>
         </section>

@@ -6,7 +6,7 @@ import Image from "next/image"
 import { formatDistanceToNow } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Menu, Upload, Settings, LogOut, Trash2, X } from "lucide-react"
+import { Menu, Upload, Settings, LogOut, Trash2, X, Home, User } from "lucide-react"
 import { UploadForm } from "@/components/upload-form"
 import { FeedbackEntry } from "@/components/feedback-entry"
 import { FeedbackProcessing } from "@/components/feedback-processing"
@@ -31,6 +31,7 @@ interface FeedbackItem {
   title: string
   date: Date
   status: 'pending' | 'processing' | 'ready'
+  imageUrl?: string
   formData?: {
     link?: string
     file?: File
@@ -111,6 +112,7 @@ export default function DashboardPage() {
     const processedFeedback: FeedbackItem = {
       ...updatedFeedback,
       status: 'ready',
+      imageUrl: "https://picsum.photos/400/300?random=1",
       metrics: [
         { 
           id: "visual-consistency",
@@ -417,20 +419,15 @@ export default function DashboardPage() {
     }, 500)
   }
 
-  // Function to get initials from email
-  const getInitials = (email: string) => {
-    return email.split('@')[0].slice(0, 2).toUpperCase()
-  }
-
   // Function to get a consistent color based on email
   const getAvatarColor = (email: string) => {
     const colors = [
-      'bg-blue-500',
-      'bg-green-500',
-      'bg-purple-500',
-      'bg-pink-500',
-      'bg-indigo-500',
-      'bg-rose-500'
+      'bg-slate-900 text-white',
+      'bg-emerald-500 text-white',
+      'bg-violet-500 text-white',
+      'bg-pink-500 text-white',
+      'bg-indigo-500 text-white',
+      'bg-blue-500 text-white'
     ]
     const index = email.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
     return colors[index % colors.length]
@@ -441,25 +438,24 @@ export default function DashboardPage() {
   // Sidebar content component to reuse in both desktop and mobile
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-        <div className="flex items-center h-12 px-2 border-b border-border">
-        <div className="flex items-center">
-            <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%5Btales%5D-logo-cr5dVmAyZBoyYbXBQ1bLbyRXtpQGBW.svg"
-              alt="Tales"
-              width={70}
-              height={70}
-            />
+      <div className="flex items-center h-16 px-2 border-b border-border">
+        <Image
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%5Btales%5D-logo-cr5dVmAyZBoyYbXBQ1bLbyRXtpQGBW.svg"
+          alt="Tales"
+          width={80}
+          height={28}
+        />
+        {!isMobile && (
           <Button 
-            variant="ghost"
+            variant="default"
             size="sm"
-            className="h-8 text-xs ml-2"
+            className="h-8 text-xs ml-auto"
             onClick={createNewFeedback}
           >
-            <Upload className="mr-1 h-3 w-3" />
+            New Feedback
           </Button>
-        </div>
-        <div className="flex-1" />
-        </div>
+        )}
+      </div>
 
       <div className="flex-1 overflow-auto p-2">
           <h2 className="text-sm font-medium mb-2">
@@ -510,9 +506,9 @@ export default function DashboardPage() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="w-full h-8 px-2 justify-start">
                 <div className="flex items-center gap-2">
-                  <Avatar className={`h-6 w-6 ${getAvatarColor(userEmail)}`}>
-                    <AvatarFallback className="text-white text-xs">
-                      {getInitials(userEmail)}
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback className={`${getAvatarColor(userEmail)} flex items-center justify-center`}>
+                      <User className="h-4 w-4" />
                     </AvatarFallback>
                   </Avatar>
                   <span className="text-xs">{userEmail}</span>
@@ -520,9 +516,9 @@ export default function DashboardPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
+              <DropdownMenuItem onClick={() => router.push("/")}>
+                <Home className="mr-2 h-4 w-4" />
+                Home
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
@@ -545,7 +541,7 @@ export default function DashboardPage() {
 
       {/* Mobile header */}
       {isMobile && (
-        <div className="fixed top-0 left-0 right-0 h-14 border-b border-border bg-card z-10 flex items-center px-4">
+        <div className="fixed top-0 left-0 right-0 h-14 border-b border-border bg-card/80 backdrop-blur-sm z-50 flex items-center px-4">
           <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="mr-2">
@@ -559,17 +555,15 @@ export default function DashboardPage() {
           <Image
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%5Btales%5D-logo-cr5dVmAyZBoyYbXBQ1bLbyRXtpQGBW.svg"
             alt="Tales"
-            width={50}
-            height={50}
+            width={80}
+            height={32}
           />
           <div className="flex-1" />
           <Button 
-            variant="ghost"
-            size="icon"
-            className="ml-2"
+            variant="default"
             onClick={createNewFeedback}
           >
-            <Upload className="h-5 w-5" />
+            New Feedback
           </Button>
         </div>
       )}
@@ -583,6 +577,7 @@ export default function DashboardPage() {
               description="Here's what our AI found in your presentation"
               metrics={currentFeedback.metrics || []}
               references={currentFeedback.references || []}
+              feedbackImage={currentFeedback.imageUrl}
             />
           </div>
         ) : (
