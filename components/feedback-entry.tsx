@@ -48,13 +48,13 @@ interface FeedbackEntryProps {
 export function FeedbackEntry({ 
   fileName, 
   description, 
-  metrics, 
-  references,
+  metrics = [], 
+  references = [],
   isLoaded = true, 
   delay = 0,
   feedbackImage
 }: FeedbackEntryProps) {
-  const [activeTab, setActiveTab] = useState<string>(references[0]?.type || 'Videos')
+  const [activeTab, setActiveTab] = useState<string>(references.length > 0 ? references[0].type : 'Videos')
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -191,7 +191,7 @@ export function FeedbackEntry({
         
         {/* Tabs using shadcn implementation */}
         <div className="w-full">
-          <Tabs defaultValue={references[0]?.type || 'Videos'} value={activeTab} onValueChange={setActiveTab}>
+          <Tabs defaultValue={references.length > 0 ? references[0].type : 'Videos'} value={activeTab} onValueChange={setActiveTab}>
             <div className="overflow-auto md:overflow-visible">
               <TabsList className="inline-flex md:flex w-auto md:w-full h-10">
                 {Object.keys(groupedReferences).map((type) => (
