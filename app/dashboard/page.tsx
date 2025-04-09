@@ -413,10 +413,7 @@ export default function DashboardPage() {
   }, [])
 
   const handleLogout = () => {
-    // Simulate logout - in the future this would clear auth tokens, etc.
-    setTimeout(() => {
-      router.push("/")
-    }, 500)
+    router.push("/")
   }
 
   // Function to get a consistent color based on email

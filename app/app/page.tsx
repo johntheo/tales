@@ -108,7 +108,7 @@ export default function AppPage() {
             Solution
           </Button>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/login">
+            <Link href="/dashboard">
               <Button variant="default" size="lg" className="bg-black text-white hover:bg-gray-800 min-w-[200px]">
                 Get Started Free
               </Button>
