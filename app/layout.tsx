@@ -9,7 +9,6 @@ const inter = Inter({ subsets: ["latin"], display: "swap" })
 export const metadata: Metadata = {
   title: "Tales - A sacred place for your work-in-progress story",
   description: "Empowering designers and professionals to tell their stories with impact.",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
