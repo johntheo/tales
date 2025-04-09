@@ -441,6 +441,8 @@ export default function DashboardPage() {
           alt="Tales"
           width={80}
           height={28}
+          className="cursor-pointer"
+          onClick={() => router.push("/")}
         />
         {!isMobile && (
           <Button 
@@ -554,6 +556,8 @@ export default function DashboardPage() {
             alt="Tales"
             width={80}
             height={32}
+            className="cursor-pointer"
+            onClick={() => router.push("/")}
           />
           <div className="flex-1" />
           <Button 

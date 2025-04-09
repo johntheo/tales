@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { motion } from "framer-motion"
+import { motion, Transition } from "framer-motion"
 import Image from "next/image"
 
 interface CardProps {
@@ -23,8 +23,10 @@ const Card = ({ color, username, index, position, total, image, scrollProgress }
   const initialY = 0
   const initialRotate = 0
 
-  const finalX = position * 55 - (total * 55) / 2 + 55
-  const finalRotate = (position - total / 2) * 3
+  // Ajustando o espaçamento entre os cards para ser responsivo
+  const cardSpacing = 40 // Reduzido ainda mais para evitar overflow
+  const finalX = position * cardSpacing - (total * cardSpacing) / 2 + cardSpacing
+  const finalRotate = (position - total / 2) * 2 // Reduzido para rotação mais suave
 
   // Calculate current position based on scroll progress (0 = initial, 1 = final)
   const currentX = initialX + (finalX - initialX) * scrollProgress
@@ -66,6 +68,21 @@ const Card = ({ color, username, index, position, total, image, scrollProgress }
     }
   }, [scrollProgress, isInitialAnimationComplete])
 
+  // Corrigindo o erro de tipagem do Framer Motion
+  const animationTransition = isInitialAnimationComplete
+    ? {
+        y: {
+          duration: 4,
+          ease: "easeInOut",
+          repeat: Number.POSITIVE_INFINITY,
+          repeatType: "loop",
+        },
+      }
+    : {
+        duration: 0.3,
+        ease: [0.25, 0.1, 0.25, 1],
+      }
+
   return (
     <motion.div
       ref={cardRef}
@@ -77,20 +94,8 @@ const Card = ({ color, username, index, position, total, image, scrollProgress }
         zIndex: total - position,
         willChange: "transform",
         backfaceVisibility: "hidden",
-        transition: isInitialAnimationComplete
-          ? {
-              y: {
-                duration: 4,
-                ease: "easeInOut",
-                repeat: Number.POSITIVE_INFINITY,
-                repeatType: "loop",
-              },
-            }
-          : {
-              duration: 0.3,
-              ease: [0.25, 0.1, 0.25, 1],
-            },
       }}
+      transition={animationTransition}
     >
       {username && (
         <motion.div
@@ -114,14 +119,14 @@ const Card = ({ color, username, index, position, total, image, scrollProgress }
           ></div>
         </motion.div>
       )}
-      <div className={`w-[280px] aspect-[16/9] rounded-xl flex items-center justify-center shadow-lg overflow-hidden`}>
+      <div className={`w-[160px] sm:w-[200px] md:w-[240px] aspect-[16/9] rounded-xl flex items-center justify-center shadow-lg overflow-hidden`}>
         <Image
           src={image || "/placeholder.svg"}
           alt={`Card ${index + 1}`}
           width={280}
           height={158}
           className="object-contain w-full h-full"
-          priority={index < 3} // Prioritize loading first 3 images
+          priority={index < 3}
         />
       </div>
     </motion.div>
@@ -311,7 +316,7 @@ export default function FloatingCards() {
   }, [hasBeenVisible])
 
   return (
-    <div ref={observerRef} className="relative h-[400px] w-full max-w-[800px] mx-auto">
+    <div ref={observerRef} className="relative h-[400px] w-full overflow-hidden">
       <div className="absolute inset-0 flex items-center justify-center">
         <div
           className="relative w-full h-full flex items-center justify-center"
@@ -325,7 +330,7 @@ export default function FloatingCards() {
         >
           <div
             ref={containerRef}
-            className="absolute transform -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 w-[700px] flex items-center justify-center"
+            className="absolute transform -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 w-full max-w-[700px] flex items-center justify-center"
           >
             {shuffledCards.map((card, index) => (
               <Card

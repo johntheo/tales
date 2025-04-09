@@ -78,30 +78,30 @@ export default function Home() {
       <Header />
       <main className="flex-grow pt-[72px] md:pt-[80px]">
         {/* Hero Section */}
-        <section className="container mx-auto px-4 pt-8 md:pt-12 pb-12 md:pb-16 text-center relative">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 md:mb-12 max-w-4xl mx-auto relative z-0">
+        <section className="container mx-auto px-4 pt-4 sm:pt-8 md:pt-12 pb-8 sm:pb-12 md:pb-16 text-center relative">
+          <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 md:mb-12 max-w-4xl mx-auto relative z-0">
             <div>A place to create</div>
             <div>your masterpiece.</div>
           </h1>
 
           <div
-            className="-mt-12 md:-mt-16 relative z-10 overflow-visible"
+            className="-mt-8 sm:-mt-12 md:-mt-16 relative z-10 overflow-visible"
             style={{ perspective: "1000px", transformStyle: "preserve-3d" }}
           >
             <FloatingCards />
           </div>
 
           <div
-            className="mt-4 opacity-0 animate-fade-in relative z-0"
+            className="mt-2 sm:mt-4 opacity-0 animate-fade-in relative z-0"
             style={{ animationDelay: "1s", animationFillMode: "forwards" }}
           >
-            <p className="max-w-2xl mx-auto mb-6 text-base md:text-lg px-4">
+            <p className="max-w-2xl mx-auto mb-4 sm:mb-6 text-sm sm:text-base md:text-lg px-2 sm:px-4">
               Upload your presentations, get <span className="font-bold">human powered AI feedback</span>, and create
               compelling narratives that captivate your audience.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link href="/dashboard">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-2 sm:px-4">
+              <Link href="/dashboard" className="w-full sm:w-auto">
                 <Button variant="default" size="lg" className="bg-black text-white hover:bg-gray-800 w-full sm:w-auto min-w-[200px]">
                   Get Started Free
                 </Button>
@@ -114,12 +114,12 @@ export default function Home() {
         </section>
 
         {/* Master Storytelling Section */}
-        <section className="container mx-auto px-4 md:px-8 py-12 md:py-16 bg-gray-50">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+        <section data-section="storytelling" className="container mx-auto px-4 md:px-8 py-8 sm:py-12 md:py-16 bg-gray-50">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 items-center">
             <div className="order-2 md:order-1">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Master the Art of Storytelling</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 md:mb-6">Master the Art of Storytelling</h2>
               <div className="max-w-md">
-                <p className="mb-4 text-sm md:text-base">
+                <p className="mb-4 text-sm sm:text-base">
                   Your work deserves to be seen, understood, and appreciated. With [tales], get expert AI-driven
                   feedback to refine your presentations and captivate your audience. Whether it's a portfolio, case
                   study, or pitch deck, we help you craft narratives that open doors.
@@ -142,7 +142,7 @@ export default function Home() {
         <FeaturesSection />
 
         {/* Core Features Section */}
-        <section ref={featuresRef} className="bg-[#09090b] text-white py-24 overflow-hidden">
+        <section ref={featuresRef} className="bg-[#09090b] text-white py-12 sm:py-16 md:py-24 overflow-hidden">
           <style jsx global>{`
             @keyframes fadeInUp {
               from {
@@ -240,25 +240,25 @@ export default function Home() {
           `}</style>
 
           <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
+            <div className="text-center mb-8 sm:mb-12 md:mb-16">
               <h2
-                className={`text-4xl md:text-5xl font-bold mb-4 ${animateFeatures ? "feature-heading" : "opacity-0"}`}
+                className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4 ${animateFeatures ? "feature-heading" : "opacity-0"}`}
               >
                 Core Features Unleashed
               </h2>
-              <p className={`text-gray-400 max-w-2xl mx-auto ${animateFeatures ? "feature-description" : "opacity-0"}`}>
+              <p className={`text-gray-400 max-w-2xl mx-auto text-sm sm:text-base ${animateFeatures ? "feature-description" : "opacity-0"}`}>
                 Dive into a world where our cutting-edge technology meets your creative needs, setting a new standard
                 for design excellence.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
               {/* Portfolio Review Card */}
               <div
                 className={`feature-card rounded-3xl border border-zinc-800 overflow-hidden ${animateFeatures ? "feature-card-1" : "opacity-0"}`}
               >
-                <div className="bg-[#09090b] p-8 h-full">
-                  <div className="card-image bg-red-600 rounded-2xl mb-6 aspect-[4/3] overflow-hidden">
+                <div className="bg-[#09090b] p-4 sm:p-6 md:p-8 h-full">
+                  <div className="card-image bg-red-600 rounded-2xl mb-4 sm:mb-6 aspect-[4/3] overflow-hidden">
                     <Image
                       src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image%205.png-c41HFW408BO4v8h9vRaxhs27vUZCjg.webp"
                       alt="Portfolio Review"
@@ -267,8 +267,8 @@ export default function Home() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <h3 className="text-xl font-semibold mb-3">Portfolio Review</h3>
-                  <p className="text-gray-400 mb-4">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">Portfolio Review</h3>
+                  <p className="text-gray-400 mb-4 text-sm sm:text-base">
                     A great portfolio can open new doors. Get detailed feedback on your portfolio to showcase your
                     skills effectively.
                   </p>
@@ -279,8 +279,8 @@ export default function Home() {
               <div
                 className={`feature-card rounded-3xl border border-zinc-800 overflow-hidden ${animateFeatures ? "feature-card-2" : "opacity-0"}`}
               >
-                <div className="bg-[#09090b] p-8 h-full">
-                  <div className="card-image bg-[#18181b] rounded-2xl mb-6 aspect-[4/3] overflow-hidden">
+                <div className="bg-[#09090b] p-4 sm:p-6 md:p-8 h-full">
+                  <div className="card-image bg-[#18181b] rounded-2xl mb-4 sm:mb-6 aspect-[4/3] overflow-hidden">
                     <Image
                       src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image%206.png-dI7bqP0LD9EO6tMU8gVJZ0OJffqGeD.webp"
                       alt="Case Presentation Review"
@@ -289,8 +289,8 @@ export default function Home() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <h3 className="text-xl font-semibold mb-3">Case Presentation Review</h3>
-                  <p className="text-gray-400 mb-4">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">Case Presentation Review</h3>
+                  <p className="text-gray-400 mb-4 text-sm sm:text-base">
                     Receive insights on your case studies to highlight your problem-solving abilities and outcomes.
                   </p>
                 </div>
@@ -300,8 +300,8 @@ export default function Home() {
               <div
                 className={`feature-card rounded-3xl border border-zinc-800 overflow-hidden ${animateFeatures ? "feature-card-3" : "opacity-0"}`}
               >
-                <div className="bg-[#09090b] p-8 h-full">
-                  <div className="card-image bg-gray-100 rounded-2xl mb-6 aspect-[4/3] overflow-hidden">
+                <div className="bg-[#09090b] p-4 sm:p-6 md:p-8 h-full">
+                  <div className="card-image bg-gray-100 rounded-2xl mb-4 sm:mb-6 aspect-[4/3] overflow-hidden">
                     <Image
                       src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image%209.png-7eFwLDccwqplAtd1FNhnVZZ9e6xBbW.webp"
                       alt="Deck Presentation Review"
@@ -310,8 +310,8 @@ export default function Home() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <h3 className="text-xl font-semibold mb-3">Deck Presentation Review</h3>
-                  <p className="text-gray-400 mb-4">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">Deck Presentation Review</h3>
+                  <p className="text-gray-400 mb-4 text-sm sm:text-base">
                     Enhance your presentation decks with expert feedback to ensure they are engaging and impactful.
                   </p>
                 </div>
@@ -321,45 +321,42 @@ export default function Home() {
         </section>
 
         {/* Community Section */}
-        <section ref={communityRef} className="container mx-auto px-4 py-12 md:py-16">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center">Join our community</h2>
+        <section ref={communityRef} className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center">Join our community</h2>
 
-          <div className="mb-6 md:mb-8">
+          <div className="mb-4 sm:mb-6 md:mb-8">
             <CommunityGallery images={communityImages} />
           </div>
 
-          <div className="max-w-3xl mx-auto text-center mt-8 md:mt-12">
-            <p className="text-base md:text-lg font-medium mb-2">
+          <div className="max-w-3xl mx-auto text-center mt-6 sm:mt-8 md:mt-12">
+            <p className="text-sm sm:text-base md:text-lg font-medium mb-2">
               Join a thriving community of designers, product managers, and storytellers shaping the future of
               presentations.
             </p>
-            <p className="mb-6 text-sm md:text-base">
+            <p className="mb-4 sm:mb-6 text-xs sm:text-sm md:text-base">
               With 500+ professionals submitting their work and 20+ industry experts providing feedback, our beta
               testers are already seeing real improvements in their portfolios and case studies. Be part of the
               movement—
               <span className="font-bold">elevate your storytelling today! 🚀</span>
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/login">
-                <Button variant="default" size="lg" className="bg-black text-white hover:bg-gray-800 min-w-[200px]">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+              <Link href="/dashboard" className="w-full sm:w-auto">
+                <Button variant="default" size="lg" className="bg-black text-white hover:bg-gray-800 w-full sm:w-auto min-w-[200px]">
                   Join Community Free
                 </Button>
               </Link>
-              {/* <Button variant="outline" size="lg" onClick={scrollToCommunity} className="min-w-[200px]">
-                View Success Stories
-              </Button> */}
             </div>
           </div>
         </section>
       </main>
 
       {/* Footer - Updated with social links */}
-      <footer className="bg-[#09090b] text-white py-12 md:py-16">
+      <footer className="bg-[#09090b] text-white py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4 md:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             {/* Left column with logo */}
-            <div className="flex items-center h-full">
+            <div className="flex items-center justify-center md:justify-start h-full">
               <Link href="/" className="inline-block">
                 <Image
                   src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%5Btales%5D-logo-cr5dVmAyZBoyYbXBQ1bLbyRXtpQGBW.svg"
@@ -372,23 +369,23 @@ export default function Home() {
             </div>
 
             {/* Right column with social links */}
-            <div className="flex items-center justify-end">
-              <div className="bg-white rounded-[6px] px-6 py-3 flex gap-8">
+            <div className="flex items-center justify-center md:justify-end">
+              <div className="bg-white rounded-[6px] px-4 sm:px-6 py-2 sm:py-3 flex gap-4 sm:gap-8">
                 <Link
                   href="https://instagram.com"
-                  className="text-[#09090b] hover:text-[#09090b]/80 transition-colors text-sm font-medium"
+                  className="text-[#09090b] hover:text-[#09090b]/80 transition-colors text-xs sm:text-sm font-medium"
                 >
                   Instagram
                 </Link>
                 <Link
                   href="https://linkedin.com"
-                  className="text-[#09090b] hover:text-[#09090b]/80 transition-colors text-sm font-medium"
+                  className="text-[#09090b] hover:text-[#09090b]/80 transition-colors text-xs sm:text-sm font-medium"
                 >
                   LinkedIn
                 </Link>
                 <Link
                   href="mailto:detales.app@gmail.com"
-                  className="text-[#09090b] hover:text-[#09090b]/80 transition-colors text-sm font-medium"
+                  className="text-[#09090b] hover:text-[#09090b]/80 transition-colors text-xs sm:text-sm font-medium"
                 >
                   Contact
                 </Link>
@@ -397,19 +394,8 @@ export default function Home() {
           </div>
 
           {/* Bottom links */}
-          <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
-            <div className="text-sm text-gray-400 mb-4 md:mb-0">© 2024 Tales. All rights reserved.</div>
-            {/* <div className="flex flex-wrap gap-6">
-              <Link href="#" className="text-sm text-gray-400 hover:text-white transition-colors">
-                Terms
-              </Link>
-              <Link href="#" className="text-sm text-gray-400 hover:text-white transition-colors">
-                Privacy
-              </Link>
-              <Link href="#" className="text-sm text-gray-400 hover:text-white transition-colors">
-                Cookies
-              </Link>
-            </div> */}
+          <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
+            <div className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-0">© 2024 Tales. All rights reserved.</div>
           </div>
         </div>
       </footer>

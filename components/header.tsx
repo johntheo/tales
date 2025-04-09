@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Menu, X } from "lucide-react"
@@ -15,10 +15,36 @@ interface HeaderProps {
 export function Header({ dashboardPage = false, feedbackPage = false }: HeaderProps) {
   const [trustModalOpen, setTrustModalOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showGetStarted, setShowGetStarted] = useState(false)
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen)
   }
+
+  // Handle scroll to show/hide Get Started button
+  useEffect(() => {
+    const handleScroll = () => {
+      // Find the "Master the Art of Storytelling" section using data attribute
+      const storytellingSection = document.querySelector('section[data-section="storytelling"]');
+      
+      if (storytellingSection) {
+        const rect = storytellingSection.getBoundingClientRect();
+        // Show button when the section is in view (top of section reaches top of viewport)
+        // Using a small threshold to trigger slightly before the section is fully in view
+        setShowGetStarted(rect.top <= 150);
+      }
+    };
+
+    // Initial check
+    handleScroll();
+
+    // Add scroll listener
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   return (
     <>
@@ -36,13 +62,28 @@ export function Header({ dashboardPage = false, feedbackPage = false }: HeaderPr
         </div>
 
         {/* Mobile menu button */}
-        <button
-          className="md:hidden p-2 focus:outline-none"
-          onClick={toggleMobileMenu}
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Get Started button that appears on scroll for mobile */}
+          {showGetStarted && (
+            <Link href="/dashboard" className="md:hidden">
+              <Button
+                variant="default"
+                size="sm"
+                className="bg-black text-white hover:bg-black/90 text-xs"
+              >
+                Get Started
+              </Button>
+            </Link>
+          )}
+          
+          <button
+            className="md:hidden p-2 focus:outline-none"
+            onClick={toggleMobileMenu}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
 
         <div className="hidden md:flex items-center gap-2 md:gap-4">
           <Button variant="ghost" className="text-sm" onClick={() => setTrustModalOpen(true)}>
@@ -71,15 +112,7 @@ export function Header({ dashboardPage = false, feedbackPage = false }: HeaderPr
               Solution
             </Button>
           )}
-          <Link href="/dashboard" className="w-full">
-            <Button
-              variant="default"
-              size="sm"
-              className="bg-black text-white hover:bg-black/90 w-full"
-            >
-              Get Started Free
-            </Button>
-          </Link>
+          {/* Removed Get Started button from mobile menu as requested */}
         </div>
       )}
 
