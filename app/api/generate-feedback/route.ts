@@ -1,21 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
+async function retryOperation<T>(operation: () => Promise<T>, retries = MAX_RETRIES): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (retries > 0) {
+      console.log(`Retrying operation, ${retries} attempts remaining...`);
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      return retryOperation(operation, retries - 1);
+    }
+    throw error;
+  }
+}
 
 export async function POST(req: NextRequest) {
   console.log('Received request:', req);
   const contentType = req.headers.get('content-type') || '';
 
-  if (contentType.includes('multipart/form-data')) {
-    console.log('Handling PDF upload'); 
-    return handlePdfUpload(req);
-  } else if (contentType.includes('application/json')) {
-    console.log('Handling link submission');
-    return handleLinkSubmission(req);
-  } else {
-    console.log('Unsupported Content-Type');
-    return NextResponse.json({ error: 'Unsupported Content-Type' }, { status: 400 });
+  try {
+    if (contentType.includes('multipart/form-data')) {
+      console.log('Handling PDF upload'); 
+      return handlePdfUpload(req);
+    } else if (contentType.includes('application/json')) {
+      console.log('Handling link submission');
+      return handleLinkSubmission(req);
+    } else {
+      console.log('Unsupported Content-Type');
+      return NextResponse.json({ error: 'Unsupported Content-Type' }, { status: 400 });
+    }
+  } catch (error) {
+    console.error('Error processing request:', error);
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : 'An unexpected error occurred',
+      details: error instanceof Error ? error.stack : undefined
+    }, { status: 500 });
   }
 }
-
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -75,36 +103,46 @@ async function handlePdfUpload(req: NextRequest) {
     return NextResponse.json({ error: 'No file uploaded.' }, { status: 400 });
   }
 
+  if (file.size > 10 * 1024 * 1024) { // 10MB limit
+    return NextResponse.json({ error: 'File size exceeds 10MB limit.' }, { status: 400 });
+  }
+
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  // Faz upload para OpenAI
-  console.log('Uploading file to OpenAI');
-  const uploadRes = await fetch('https://api.openai.com/v1/files', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY!}`,
-      'OpenAI-Beta': 'assistants=v2'
-    },
-    body: (() => {
-      const f = new FormData();
-      f.append('file', new Blob([buffer]), file.name);
-      f.append('purpose', 'assistants');
-      return f;
-    })(),
-  });
+  try {
+    // Upload file to OpenAI
+    console.log('Uploading file to OpenAI');
+    const uploadedFile = await retryOperation(async () => {
+      // Create a File object that implements the required interface
+      const fileObject = new File([buffer], file.name, {
+        type: file.type,
+        lastModified: file.lastModified
+      });
+      
+      return await openai.files.create({
+        file: fileObject,
+        purpose: 'assistants'
+      });
+    });
 
-  const uploadedFile = await uploadRes.json();
-  if (!uploadedFile?.id) {
-    return NextResponse.json({ error: 'Failed to upload file to OpenAI.' }, { status: 500 });
+    if (!uploadedFile?.id) {
+      throw new Error('Failed to upload file to OpenAI.');
+    }
+
+    // Create thread and run assistant
+    console.log('Creating thread and running assistant');
+    return createThreadAndRun({
+      content: 'The portfolio is in the uploaded PDF file. Please analyze it in detail.',
+      file_ids: [uploadedFile.id],
+    });
+  } catch (error) {
+    console.error('Error in PDF upload:', error);
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : 'Failed to process PDF file',
+      details: error instanceof Error ? error.stack : undefined
+    }, { status: 500 });
   }
-
-  // Cria thread e envia para o Assistant
-  console.log('Creating thread and running assistant');
-  return createThreadAndRun({
-    content: 'The portfolio is in the uploaded PDF file. Please analyze it in detail.',
-    file_ids: [uploadedFile.id],
-  });
 }
 
 // 🟢 2. Análise de link (via JSON)
@@ -115,10 +153,18 @@ async function handleLinkSubmission(req: NextRequest) {
     return NextResponse.json({ error: 'Missing URL.' }, { status: 400 });
   }
 
-  // Cria thread e envia mensagem com o link
-  return createThreadAndRun({
-    content: `Please analyze the portfolio available at the following link:\n\n${url}`,
-  });
+  try {
+    // Create thread and send message with the link
+    return createThreadAndRun({
+      content: `Please analyze the portfolio available at the following link:\n\n${url}`,
+    });
+  } catch (error) {
+    console.error('Error in link submission:', error);
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : 'Failed to process URL',
+      details: error instanceof Error ? error.stack : undefined
+    }, { status: 500 });
+  }
 }
 
 // 🧠 Função comum que cria thread, mensagem e executa o run
@@ -129,65 +175,44 @@ async function createThreadAndRun({
   content: string;
   file_ids?: string[];
 }) {
-  // Cria a thread
-  console.log('Creating thread');
-  const threadRes = await fetch('https://api.openai.com/v1/threads', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY!}`,
-      'Content-Type': 'application/json',
-      'OpenAI-Beta': 'assistants=v2'
-    },
-    body: JSON.stringify({}),
-  });
+  try {
+    // Create thread
+    console.log('Creating thread');
+    const thread = await retryOperation(() => 
+      openai.beta.threads.create()
+    );
 
-  const thread = await threadRes.json();
-
-  // Cria a mensagem
-  console.log('Creating message');
-  const messageRes = await fetch(
-    `https://api.openai.com/v1/threads/${thread.id}/messages`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY!}`,
-        'Content-Type': 'application/json',
-        'OpenAI-Beta': 'assistants=v2'
-      },
-      body: JSON.stringify({
+    // Create message
+    console.log('Creating message');
+    const message = await retryOperation(() => 
+      openai.beta.threads.messages.create(thread.id, {
         role: 'user',
         content,
-        file_ids,
-      }),
-    }
-  );
+        attachments: file_ids ? file_ids.map(id => ({ 
+          file_id: id,
+          tools: [{ type: "file_search" }]
+        })) : undefined
+      })
+    );
 
-  const message = await messageRes.json();
-
-  // Executa o assistant
-  console.log('Executing assistant');
-  const runRes = await fetch(
-    `https://api.openai.com/v1/threads/${thread.id}/runs`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY!}`,
-        'Content-Type': 'application/json',
-        'OpenAI-Beta': 'assistants=v2'
-      },
-      body: JSON.stringify({
+    // Execute assistant
+    console.log('Executing assistant');
+    const run = await retryOperation(() => 
+      openai.beta.threads.runs.create(thread.id, {
         assistant_id: process.env.OPENAI_ASSISTANT_ID!,
-      }),
-    }
-  );
+      })
+    );
 
-  const run = await runRes.json();
-  console.log('Run response:', run);
+    console.log('Run response:', run);
 
-  return NextResponse.json({
-    thread_id: thread.id,
-    run_id: run.id,
-    message_id: message.id,
-    ...(file_ids ? { file_ids } : {}),
-  });
+    return NextResponse.json({
+      thread_id: thread.id,
+      run_id: run.id,
+      message_id: message.id,
+      ...(file_ids ? { file_ids } : {}),
+    });
+  } catch (error) {
+    console.error('Error in thread creation:', error);
+    throw error;
+  }
 }

@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react"
 import { UploadForm } from "@/components/upload-form"
 import { FeedbackEntry } from "@/components/feedback-entry"
-import { FeedbackProcessing } from "@/components/feedback-processing"
+import { LoadingScreen } from "@/components/loading-screen"
 import PeelCard from "@/components/peel-component"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
+import { usePollingStatus } from "@/hooks/usePollingStatus"
 
 interface FeedbackData {
   id: string
@@ -93,11 +94,38 @@ export function FeedbackContent({
   onReveal
 }: FeedbackContentProps) {
   const isMobile = useMediaQuery("(max-width: 768px)")
+  const { status, output } = usePollingStatus(
+    feedback.status === 'processing' && feedback.threadId ? feedback.threadId : '',
+    feedback.status === 'processing' && feedback.runId ? feedback.runId : ''
+  )
+
+  useEffect(() => {
+    if (!feedback.threadId || !feedback.runId) return;
+    
+    if (feedback.status === 'processing' && (status === "failed" || status === "cancelled" || status === "expired")) {
+      onComplete("An error occurred while processing your feedback. Please try again.")
+    } else if (feedback.status === 'processing' && status === "completed" && output) {
+      onComplete(output)
+    }
+  }, [status, output, onComplete, feedback.status, feedback.threadId, feedback.runId])
+
+  const getStatusMessage = (status: string) => {
+    switch (status) {
+      case "loading":
+        return "Initializing analysis..."
+      case "queued":
+        return "Preparing to analyze your content..."
+      case "in_progress":
+        return "Analyzing your content and generating insights..."
+      default:
+        return `Status: ${status}`
+    }
+  }
 
   if (feedback.status === 'upload') {
     return (
-      <div className="h-full flex items-center justify-center">
-        <Card className="w-full max-w-2xl mx-4">
+      <div className="h-full flex items-center justify-center p-4">
+        <Card className="w-full max-w-2xl">
           <CardContent className="p-6">
             <UploadForm 
               onSubmit={onUpload}
@@ -109,18 +137,25 @@ export function FeedbackContent({
     )
   }
 
-  if (feedback.status === 'processing' && feedback.threadId && feedback.runId) {
+  if (feedback.status === 'processing') {
+    if (status === "failed" || status === "cancelled" || status === "expired") {
+      return (
+        <div className="h-full flex items-center justify-center p-4">
+          <Alert variant="destructive">
+            <AlertDescription>
+              An error occurred while processing your feedback. Please try again.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )
+    }
+
     return (
-      <div className="h-full flex items-center justify-center">
-        <Card className="w-full max-w-2xl mx-4">
-          <CardContent className="p-6">
-            <FeedbackProcessing
-              threadId={feedback.threadId}
-              runId={feedback.runId}
-              onComplete={onComplete}
-            />
-          </CardContent>
-        </Card>
+      <div className="h-full flex items-center justify-center p-4">
+        <LoadingScreen 
+          title={getStatusMessage(status)}
+          description="Our AI is carefully reviewing your work to provide detailed feedback and suggestions for improvement. This usually takes about a minute."
+        />
       </div>
     )
   }

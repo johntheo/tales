@@ -113,7 +113,8 @@ export default function DashboardPage() {
     if (!currentFeedback) return
 
     try {
-      const feedbackData = JSON.parse(output)
+      console.log('Raw output:', output); // Log the raw output for debugging
+      const feedbackData = JSON.parse(output.trim()); // Trim any whitespace
       
       const updatedFeedback: FeedbackItem = {
         ...currentFeedback,
@@ -131,7 +132,20 @@ export default function DashboardPage() {
 
       setCurrentFeedback(updatedFeedback)
     } catch (error) {
-      console.error('Error parsing feedback:', error)
+      console.error('Error parsing feedback:', error);
+      console.error('Invalid JSON:', output);
+      
+      const updatedFeedback: FeedbackItem = {
+        ...currentFeedback,
+        status: 'upload',
+        title: "New Feedback"
+      }
+
+      setFeedbacks(prev => prev.map(feedback => 
+        feedback.id === currentFeedback.id ? updatedFeedback : feedback
+      ))
+
+      setCurrentFeedback(updatedFeedback)
     }
   }
 
