@@ -162,15 +162,17 @@ export function FeedbackContent({
 
   if (feedback.status === 'ready') {
     return (
-      <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-        <PeelCard
-          onReveal={onReveal}
-          gradient="linear-gradient(135deg, #6B63B5 0%, #5D56A6 100%)"
-          name="Your Feedback"
-          role="is ready"
-          width={isMobile ? 320 : 640}
-          height={isMobile ? 180 : 360}
-        />
+      <div className="p-4 md:p-6">
+        <div className="w-full max-w-5xl mx-auto">
+          <PeelCard
+            onReveal={onReveal}
+            gradient="linear-gradient(135deg, #6B63B5 0%, #5D56A6 100%)"
+            name="Your Feedback"
+            role="is ready"
+            width={isMobile ? 320 : 640}
+            height={isMobile ? 180 : 360}
+          />
+        </div>
       </div>
     )
   }

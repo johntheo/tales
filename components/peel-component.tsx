@@ -98,24 +98,6 @@ export default function PeelCard({ onReveal, gradient, name, role, width, height
       })
     }
 
-    // fire(0.5, {
-    //   spread: 260,
-    //   startVelocity: 55,
-    //   origin: { x: 0.2, y: 0.7 },
-    // })
-
-    // fire(0.2, {
-    //   spread: 60,
-    //   origin: { x: 0.5, y: 0.7 },
-    // })
-
-    // fire(0.35, {
-    //   spread: 100,
-    //   decay: 0.91,
-    //   scalar: 0.8,
-    //   origin: { x: 0.8, y: 0.7 },
-    // })
-
     fire(2.6, {
       spread: 360,
       startVelocity: 35,
@@ -130,12 +112,6 @@ export default function PeelCard({ onReveal, gradient, name, role, width, height
       scalar: 0.9,
       origin: { x: 0.65, y: 0.3 },
     })
-
-    // fire(0.1, {
-    //   spread: 120,
-    //   startVelocity: 45,
-    //   origin: { x: 0.5, y: 0.7 },
-    // })
   }
 
   const handleEnd = useCallback(() => {
@@ -355,6 +331,8 @@ export default function PeelCard({ onReveal, gradient, name, role, width, height
           {role}
         </motion.p>
       </motion.div>
+
+      {/* Peel overlay */}
       <div 
         className="absolute inset-x-0 top-1/2 transform -translate-y-1/2 h-12 z-20"
       >
