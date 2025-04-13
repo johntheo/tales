@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
+  console.log('Received request:', req);
   const contentType = req.headers.get('content-type') || '';
 
   if (contentType.includes('multipart/form-data')) {
+    console.log('Handling PDF upload'); 
     return handlePdfUpload(req);
   } else if (contentType.includes('application/json')) {
+    console.log('Handling link submission');
     return handleLinkSubmission(req);
   } else {
+    console.log('Unsupported Content-Type');
     return NextResponse.json({ error: 'Unsupported Content-Type' }, { status: 400 });
   }
 }
@@ -27,6 +31,7 @@ export async function GET(req: NextRequest) {
     {
       headers: {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY!}`,
+        'OpenAI-Beta': 'assistants=v2'
       },
     }
   );
@@ -43,6 +48,7 @@ export async function GET(req: NextRequest) {
     {
       headers: {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY!}`,
+        'OpenAI-Beta': 'assistants=v2'
       },
     }
   );
@@ -61,7 +67,7 @@ export async function GET(req: NextRequest) {
 }
 
 // 🟡 1. Análise de PDF enviado via form
-async function handlePdfUpload(req: NextRequest) {
+async function handlePdfUpload(req: NextRequest) {  
   const formData = await req.formData();
   const file = formData.get('file') as File;
 
@@ -73,10 +79,12 @@ async function handlePdfUpload(req: NextRequest) {
   const buffer = Buffer.from(arrayBuffer);
 
   // Faz upload para OpenAI
+  console.log('Uploading file to OpenAI');
   const uploadRes = await fetch('https://api.openai.com/v1/files', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${process.env.OPENAI_API_KEY!}`,
+      'OpenAI-Beta': 'assistants=v2'
     },
     body: (() => {
       const f = new FormData();
@@ -92,6 +100,7 @@ async function handlePdfUpload(req: NextRequest) {
   }
 
   // Cria thread e envia para o Assistant
+  console.log('Creating thread and running assistant');
   return createThreadAndRun({
     content: 'The portfolio is in the uploaded PDF file. Please analyze it in detail.',
     file_ids: [uploadedFile.id],
@@ -121,11 +130,13 @@ async function createThreadAndRun({
   file_ids?: string[];
 }) {
   // Cria a thread
+  console.log('Creating thread');
   const threadRes = await fetch('https://api.openai.com/v1/threads', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${process.env.OPENAI_API_KEY!}`,
       'Content-Type': 'application/json',
+      'OpenAI-Beta': 'assistants=v2'
     },
     body: JSON.stringify({}),
   });
@@ -133,6 +144,7 @@ async function createThreadAndRun({
   const thread = await threadRes.json();
 
   // Cria a mensagem
+  console.log('Creating message');
   const messageRes = await fetch(
     `https://api.openai.com/v1/threads/${thread.id}/messages`,
     {
@@ -140,6 +152,7 @@ async function createThreadAndRun({
       headers: {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY!}`,
         'Content-Type': 'application/json',
+        'OpenAI-Beta': 'assistants=v2'
       },
       body: JSON.stringify({
         role: 'user',
@@ -152,6 +165,7 @@ async function createThreadAndRun({
   const message = await messageRes.json();
 
   // Executa o assistant
+  console.log('Executing assistant');
   const runRes = await fetch(
     `https://api.openai.com/v1/threads/${thread.id}/runs`,
     {
@@ -159,6 +173,7 @@ async function createThreadAndRun({
       headers: {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY!}`,
         'Content-Type': 'application/json',
+        'OpenAI-Beta': 'assistants=v2'
       },
       body: JSON.stringify({
         assistant_id: process.env.OPENAI_ASSISTANT_ID!,
@@ -167,6 +182,7 @@ async function createThreadAndRun({
   );
 
   const run = await runRes.json();
+  console.log('Run response:', run);
 
   return NextResponse.json({
     thread_id: thread.id,

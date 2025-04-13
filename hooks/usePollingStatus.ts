@@ -1,30 +1,66 @@
-import { useEffect, useState } from 'react';
+"use client"
+
+import { useState, useEffect } from "react"
+
+type Status = "queued" | "in_progress" | "completed" | "failed" | "cancelled" | "expired" | "loading"
+
+interface PollingResponse {
+  status: Status
+  output?: string
+}
 
 export function usePollingStatus(threadId: string, runId: string) {
-  const [status, setStatus] = useState<'in_progress' | 'completed' | 'failed' | 'cancelled' | 'expired' | 'queued' | 'requires_action' | 'loading'>('loading');
-  const [output, setOutput] = useState<string | null>(null);
+  const [status, setStatus] = useState<Status>("loading")
+  const [output, setOutput] = useState<string>("")
 
   useEffect(() => {
-    if (!threadId || !runId) return;
+    console.log("usePollingStatus hook initialized with:", { threadId, runId })
+    
+    if (!threadId || !runId) {
+      console.warn("Missing threadId or runId")
+      return
+    }
 
-    const interval = setInterval(async () => {
-      const res = await fetch(`/api/analyze/status?thread_id=${threadId}&run_id=${runId}`);
-      const data = await res.json();
+    let isActive = true
 
-      setStatus(data.status);
+    const pollStatus = async () => {
+      try {
+        console.log("Polling status for:", { threadId, runId })
+        const response = await fetch(`/api/check-status?threadId=${threadId}&runId=${runId}`)
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
+        const data: PollingResponse = await response.json()
+        console.log("Received polling response:", data)
 
-      if (data.status === 'completed' && data.output) {
-        setOutput(data.output);
-        clearInterval(interval);
+        if (!isActive) return
+
+        setStatus(data.status)
+        if (data.output) {
+          setOutput(data.output)
+        }
+
+        if (!["completed", "failed", "cancelled", "expired"].includes(data.status)) {
+          setTimeout(pollStatus, 2000)
+        }
+      } catch (error) {
+        console.error("Error polling status:", error)
+        if (isActive) {
+          setStatus("failed")
+        }
       }
+    }
 
-      if (['failed', 'cancelled', 'expired'].includes(data.status)) {
-        clearInterval(interval);
-      }
-    }, 3000); // verifica a cada 3 segundos
+    pollStatus()
 
-    return () => clearInterval(interval);
-  }, [threadId, runId]);
+    return () => {
+      isActive = false
+      setStatus("loading")
+      setOutput("")
+    }
+  }, [threadId, runId])
 
-  return { status, output };
+  return { status, output }
 }
