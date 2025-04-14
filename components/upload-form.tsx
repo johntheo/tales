@@ -5,11 +5,10 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { X } from "lucide-react"
+import { X, Upload, FileText, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LoadingScreen } from "@/components/loading-screen"
-import { Upload } from "lucide-react"
 
 interface UploadFormProps {
   onSubmit: (data: { threadId: string; runId: string }) => void
@@ -42,26 +41,39 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
     setIsDragging(false)
     
     const droppedFile = e.dataTransfer.files[0]
-    if (droppedFile) {
-      setFile(droppedFile)
-      setLink("")
+    if (droppedFile && droppedFile.type === 'application/pdf') {
+      if (droppedFile.size <= 10 * 1024 * 1024) { // 10MB limit
+        setFile(droppedFile)
+        setLink("")
+      } else {
+        setError("File size exceeds 10MB limit")
+      }
+    } else {
+      setError("Please upload a PDF file")
     }
   }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
     if (selectedFile) {
-      setFile(selectedFile)
-      setLink("")
+      if (selectedFile.type === 'application/pdf') {
+        if (selectedFile.size <= 10 * 1024 * 1024) { // 10MB limit
+          setFile(selectedFile)
+          setLink("")
+        } else {
+          setError("File size exceeds 10MB limit")
+        }
+      } else {
+        setError("Please upload a PDF file")
+      }
     }
   }
 
   const handleRemoveFile = () => {
     setFile(null)
-    // Reset the input value so the same file can be selected again
-    const fileInput = document.getElementById("fileInput") as HTMLInputElement
-    if (fileInput) {
-      fileInput.value = ""
+    setError(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
     }
   }
 
@@ -147,46 +159,69 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
             <Label>Or Upload File</Label>
             <div
               className={cn(
-                "mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10",
-                isDragging && "border-primary",
-                !!file && "border-solid border-primary/50 bg-primary/5"
+                "mt-2 flex flex-col justify-center rounded-lg border border-dashed px-6 py-8",
+                isDragging ? "border-primary bg-primary/5" : "border-gray-200",
+                file ? "border-solid border-primary/50 bg-primary/5" : "",
+                "relative"
               )}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
-              <div className="text-center">
-                <div className="mt-4 flex text-sm leading-6 text-gray-600">
-                  <label
-                    htmlFor="file-upload"
-                    className="relative cursor-pointer rounded-md bg-white font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80"
-                  >
-                    <span>Upload a file</span>
-                    <input
-                      id="file-upload"
-                      name="file-upload"
-                      type="file"
-                      className="sr-only"
-                      onChange={handleFileSelect}
-                      ref={fileInputRef}
-                      disabled={!!link || isProcessing}
-                    />
-                  </label>
-                  <p className="pl-1">or drag and drop</p>
-                </div>
-                <p className="text-xs leading-5 text-gray-600">PDF up to 10MB</p>
-                {file && (
-                  <div className="mt-4 text-sm text-primary">
-                    Selected: {file.name}
+              {!file ? (
+                <div className="text-center">
+                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                  <div className="mt-4 flex flex-col items-center text-sm text-gray-600">
+                    <label
+                      htmlFor="file-upload"
+                      className="relative cursor-pointer rounded-md font-semibold text-primary hover:text-primary/80"
+                    >
+                      <span>Upload a file</span>
+                      <input
+                        id="file-upload"
+                        name="file-upload"
+                        type="file"
+                        className="sr-only"
+                        onChange={handleFileSelect}
+                        ref={fileInputRef}
+                        accept=".pdf"
+                        disabled={!!link || isProcessing}
+                      />
+                    </label>
+                    <p className="pl-1">or drag and drop</p>
                   </div>
-                )}
-              </div>
+                  <p className="text-xs text-gray-500 mt-2">PDF up to 10MB</p>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-4 bg-background rounded-md">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-2 bg-primary/10 rounded-md">
+                      <FileText className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{file.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {(file.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="hover:bg-destructive/10 hover:text-destructive"
+                    onClick={handleRemoveFile}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="mt-4">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}

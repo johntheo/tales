@@ -10,8 +10,11 @@ import { Separator } from "@/components/ui/separator"
 import { ExternalLink, ChevronRight, Layout, Code2, Lightbulb, Users, BookText } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts'
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { FeedbackPDF } from './feedback-pdf';
+import { toast } from 'sonner';
 
-interface Areas {
+export interface Areas {
   clarity: {
     score: number
     feedback: string
@@ -34,14 +37,14 @@ interface Areas {
   }
 }
 
-interface Reference {
+export interface Reference {
   title: string
   summary: string
   image: string
   link: string
 }
 
-interface References {
+export interface References {
   videos: Reference[]
   podcasts: Reference[]
   articles: Reference[]
@@ -142,18 +145,44 @@ export function FeedbackEntry({
                 />
               </div>
             )}
-            <div className="p-4 space-y-4 md:w-3/4">
-              <div>
+            <div className="p-4 space-y-4 md:w-3/4 flex flex-col h-full">
+              <div className="flex-1">
                 <h2 className="text-xl font-semibold mb-1">{fileName}</h2>
                 <p className="text-sm text-muted-foreground">{description}</p>
               </div>
               <div className="flex flex-col md:flex-row gap-2 w-full">
-                <Button variant="outline" className="w-full md:w-1/2 justify-center">
-                  Download your file
-                </Button>
-                <Button className="w-full md:w-1/2 justify-center">
-                  Talk to a professional
-                </Button>
+                <PDFDownloadLink
+                  document={
+                    <FeedbackPDF
+                      fileName={fileName}
+                      description={description}
+                      metrics={metrics}
+                      references={references}
+                    />
+                  }
+                  fileName={`${fileName}-feedback.pdf`}
+                  className="w-full md:w-1/2"
+                  onClick={() => {
+                    toast.success('PDF generated successfully!', {
+                      description: 'Your feedback report is ready for download.',
+                      duration: 3000,
+                    });
+                  }}
+                >
+                  {({ loading }) => (
+                    <Button variant="outline" className="w-full justify-center" disabled={loading}>
+                      {loading ? 'Generating PDF...' : 'Download your file'}
+                    </Button>
+                  )}
+                </PDFDownloadLink>
+                <a 
+                  href={`mailto:detales.app@gmail.com?subject=Mentoring Request - ${fileName}&body=Hi there,%0D%0A%0D%0AI've just received feedback on my presentation "${fileName}" and I'm interested in scheduling a mentoring session to discuss it further and get professional guidance.%0D%0A%0D%0ALooking forward to hearing from you!%0D%0A%0D%0ABest regards`}
+                  className="w-full md:w-1/2"
+                >
+                  <Button className="w-full justify-center">
+                    Talk to a professional
+                  </Button>
+                </a>
               </div>
             </div>
           </div>
