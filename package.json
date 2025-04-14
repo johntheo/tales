@@ -34,6 +34,7 @@
     "openai": "^4.93.0",
     "react": "^19",
     "react-dom": "^19",
+    "recharts": "^2.15.2",
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7"

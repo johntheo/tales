@@ -7,8 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { ExternalLink, ChevronRight } from "lucide-react"
+import { ExternalLink, ChevronRight, Layout, Code2, Lightbulb, Users, BookText } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts'
 
 interface Areas {
   clarity: {
@@ -67,12 +68,52 @@ export function FeedbackEntry({
 }: FeedbackEntryProps) {
   const [selectedArea, setSelectedArea] = useState<keyof Areas>("clarity")
 
-  const areaNames: Record<keyof Areas, string> = {
-    clarity: "Clarity & Structure",
-    technical_skills: "Technical Skills",
-    innovation: "Innovation",
-    user_focus: "User Focus",
-    storytelling: "Storytelling"
+  const areaConfig: Record<keyof Areas, { name: string; icon: React.ReactNode; color: string }> = {
+    clarity: { 
+      name: "Clarity & Structure", 
+      icon: <Layout className="h-4 w-4" />,
+      color: "#FF6B6B" // Coral Red
+    },
+    technical_skills: { 
+      name: "Technical Skills", 
+      icon: <Code2 className="h-4 w-4" />,
+      color: "#4ECDC4" // Mint
+    },
+    innovation: { 
+      name: "Innovation", 
+      icon: <Lightbulb className="h-4 w-4" />,
+      color: "#45B7D1" // Sky Blue
+    },
+    user_focus: { 
+      name: "User Focus", 
+      icon: <Users className="h-4 w-4" />,
+      color: "#96CEB4" // Sage Green
+    },
+    storytelling: { 
+      name: "Storytelling", 
+      icon: <BookText className="h-4 w-4" />,
+      color: "#D4A5A5" // Dusty Rose
+    }
+  }
+
+  // Transform metrics data for the radar chart
+  const radarData = Object.entries(metrics).map(([key, value]) => ({
+    subject: key,
+    score: value.score,
+    fullMark: 10
+  }))
+
+  const CustomAxisTick = ({ x, y, payload }: any) => {
+    const area = areaConfig[payload.value as keyof Areas]
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <foreignObject x="-12" y="-12" width="24" height="24">
+          <div className="h-6 w-6 rounded-full flex items-center justify-center" style={{ backgroundColor: area.color }}>
+            {area.icon}
+          </div>
+        </foreignObject>
+      </g>
+    )
   }
 
   if (!isLoaded) return null
@@ -92,7 +133,7 @@ export function FeedbackEntry({
         <CardContent className="p-0">
           <div className="flex flex-col md:flex-row">
             {feedbackImage && (
-              <div className="relative w-full md:w-1/4 aspect-[16/9]">
+              <div className="relative w-full md:w-1/4 aspect-[16/9] md:aspect-square">
                 <Image
                   src={feedbackImage}
                   alt={fileName}
@@ -122,27 +163,76 @@ export function FeedbackEntry({
       {/* Overall Analysis */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-semibold">Overall Analysis</h2>
-          <p className="text-sm text-muted-foreground mt-1">Good views to grow your expertise.</p>
+          <h2 className="text-xl font-semibold">Areas Analysis</h2>
         </div>
 
-        <Accordion type="single" defaultValue="clarity" className="w-full">
-          {Object.entries(metrics).map(([key, value]) => (
-            <AccordionItem key={key} value={key}>
-              <AccordionTrigger className="hover:no-underline [&>svg]:hidden group">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <ChevronRight className="h-5 w-5 text-primary transition-transform duration-200 group-data-[state=open]:rotate-90" />
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Radar Chart */}
+          <Card className="w-full lg:w-1/4 p-4">
+            <div className="text-center mb-2">
+              <h3 className="text-sm font-medium">Score Overview</h3>
+            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <RadarChart cx="50%" cy="50%" outerRadius="65%" data={radarData}>
+                <PolarGrid gridType="circle" />
+                <PolarAngleAxis
+                  dataKey="subject"
+                  tick={<CustomAxisTick />}
+                />
+                <PolarRadiusAxis
+                  angle={30}
+                  domain={[0, 10]}
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  axisLine={false}
+                />
+                {Object.entries(areaConfig).map(([key, config]) => (
+                  <Radar
+                    key={key}
+                    name={config.name}
+                    dataKey="score"
+                    stroke={config.color}
+                    fill={config.color}
+                    fillOpacity={0.3}
+                  />
+                ))}
+              </RadarChart>
+            </ResponsiveContainer>
+            <div className="mt-6 grid grid-cols-2 gap-3 text-xs">
+              {Object.entries(areaConfig).map(([key, config]) => (
+                <div key={key} className="flex items-center gap-2" title={config.name}>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: config.color }}>
+                    {config.icon}
                   </div>
-                  <span className="font-medium text-sm">{areaNames[key as keyof Areas]}</span>
+                  <span className="text-muted-foreground truncate">{config.name}</span>
                 </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <p className="text-sm text-muted-foreground pl-11">{value.feedback}</p>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+              ))}
+            </div>
+          </Card>
+
+          {/* Accordion Feedback */}
+          <div className="lg:w-3/4">
+            <Accordion type="single" defaultValue="clarity" className="w-full">
+              {Object.entries(metrics).map(([key, value]) => (
+                <AccordionItem key={key} value={key}>
+                  <AccordionTrigger className="hover:no-underline [&>svg]:hidden group">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-white"
+                        style={{ backgroundColor: areaConfig[key as keyof Areas].color }}
+                      >
+                        {areaConfig[key as keyof Areas].icon}
+                      </div>
+                      <span className="font-medium text-sm">{areaConfig[key as keyof Areas].name}</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <p className="text-sm text-muted-foreground pl-11">{value.feedback}</p>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </div>
       </div>
 
       {/* References */}
