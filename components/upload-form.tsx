@@ -9,6 +9,7 @@ import { X, Upload, FileText, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LoadingScreen } from "@/components/loading-screen"
+import { toast } from "sonner"
 
 interface UploadFormProps {
   onSubmit: (data: { threadId: string; runId: string }) => void
@@ -41,15 +42,22 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
     setIsDragging(false)
     
     const droppedFile = e.dataTransfer.files[0]
-    if (droppedFile && droppedFile.type === 'application/pdf') {
-      if (droppedFile.size <= 10 * 1024 * 1024) { // 10MB limit
-        setFile(droppedFile)
-        setLink("")
+    if (droppedFile) {
+      if (droppedFile.type === 'application/pdf') {
+        if (droppedFile.size <= 10 * 1024 * 1024) { // 10MB limit
+          setFile(droppedFile)
+          setLink("")
+          setError(null)
+        } else {
+          const errorMsg = "File size exceeds 10MB limit"
+          setError(errorMsg)
+          toast.error(errorMsg)
+        }
       } else {
-        setError("File size exceeds 10MB limit")
+        const errorMsg = "Please upload a PDF file"
+        setError(errorMsg)
+        toast.error(errorMsg)
       }
-    } else {
-      setError("Please upload a PDF file")
     }
   }
 
@@ -60,11 +68,16 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
         if (selectedFile.size <= 10 * 1024 * 1024) { // 10MB limit
           setFile(selectedFile)
           setLink("")
+          setError(null)
         } else {
-          setError("File size exceeds 10MB limit")
+          const errorMsg = "File size exceeds 10MB limit"
+          setError(errorMsg)
+          toast.error(errorMsg)
         }
       } else {
-        setError("Please upload a PDF file")
+        const errorMsg = "Please upload a PDF file"
+        setError(errorMsg)
+        toast.error(errorMsg)
       }
     }
   }
@@ -108,7 +121,10 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
 
       if (!response?.ok) {
         const errorData = await response?.json();
-        throw new Error(errorData?.error || 'Failed to submit for analysis');
+        const errorMsg = errorData?.error || 'Failed to submit for analysis'
+        setError(errorMsg);
+        toast.error(errorMsg);
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
@@ -118,7 +134,9 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
       });
     } catch (error) {
       console.error('Error submitting for analysis:', error);
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+      const errorMsg = error instanceof Error ? error.message : 'An unexpected error occurred'
+      setError(errorMsg);
+      toast.error(errorMsg);
       setIsProcessing(false);
     }
   }

@@ -163,20 +163,32 @@ export function FeedbackEntry({
                       description={description}
                       metrics={metrics}
                       references={references}
+                      feedbackImage={feedbackImage}
                     />
                   }
                   fileName={`${fileName}-feedback.pdf`}
                   className="w-full md:w-1/2"
                   onClick={() => {
-                    toast.success('PDF generated successfully!', {
-                      description: 'Your feedback report is ready for download.',
+                    toast.success('Generating PDF...', {
+                      description: 'Your feedback report is being prepared.',
                       duration: 3000,
                     });
                   }}
+                  onError={(event) => {
+                    console.error('PDF generation error:', event);
+                    toast.error('Failed to generate PDF', {
+                      description: 'There was an error generating your feedback report. Please try again.',
+                      duration: 5000,
+                    });
+                  }}
                 >
-                  {({ loading }) => (
-                    <Button variant="outline" className="w-full justify-center" disabled={loading}>
-                      {loading ? 'Generating PDF...' : 'Download your file'}
+                  {({ loading, error }) => (
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-center" 
+                      disabled={loading || !!error}
+                    >
+                      {loading ? 'Generating PDF...' : error ? 'Error generating PDF' : 'Download your file'}
                     </Button>
                   )}
                 </PDFDownloadLink>

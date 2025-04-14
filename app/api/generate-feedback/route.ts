@@ -151,6 +151,11 @@ async function handlePdfUpload(req: NextRequest) {
     return NextResponse.json({ error: 'No file uploaded.' }, { status: 400 });
   }
 
+  // Validate file type
+  if (file.type !== 'application/pdf') {
+    return NextResponse.json({ error: 'Invalid file type. Please upload a PDF file.' }, { status: 400 });
+  }
+
   if (file.size > 10 * 1024 * 1024) { // 10MB limit
     return NextResponse.json({ error: 'File size exceeds 10MB limit.' }, { status: 400 });
   }
@@ -164,7 +169,7 @@ async function handlePdfUpload(req: NextRequest) {
     const uploadedFile = await retryOperation(async () => {
       // Create a File object that implements the required interface
       const fileObject = new File([buffer], file.name, {
-        type: file.type,
+        type: 'application/pdf', // Force the correct MIME type
         lastModified: file.lastModified
       });
 
