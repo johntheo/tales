@@ -77,113 +77,147 @@ export function FeedbackEntry({
   if (!isLoaded) return null
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Left column - Areas */}
-        <div className="flex-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>{fileName}</CardTitle>
-              <CardDescription>{description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Object.entries(metrics).map(([key, value]) => (
-                <Card
-                  key={key}
-                  className={`cursor-pointer transition-colors hover:bg-accent/50 ${
-                    selectedArea === key ? 'bg-accent' : ''
-                  }`}
-                  onClick={() => setSelectedArea(key as keyof Areas)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-semibold">{areaNames[key as keyof Areas]}</h3>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold">{value.score}</span>
-                        <span className="text-sm text-muted-foreground">/10</span>
-                      </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {value.feedback}
-                    </p>
-                    <ChevronRight
-                      className={`w-5 h-5 mt-2 transition-transform ${
-                        selectedArea === key ? 'rotate-90' : ''
-                      }`}
-                    />
-                    {selectedArea === key && (
-                      <div className="mt-4 text-sm">
-                        {value.feedback}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </CardContent>
-          </Card>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight">Your latest feedback is here!</h1>
+        <p className="text-base text-muted-foreground">
+          We've reviewed your submission. Here's an overview of your presentation's performance and key areas for improvement.
+        </p>
+      </div>
+
+      {/* File Preview */}
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          {feedbackImage && (
+            <div className="relative w-full aspect-[16/9]">
+              <Image
+                src={feedbackImage}
+                alt={fileName}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+          <div className="p-4 space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold mb-1">{fileName}</h2>
+              <p className="text-sm text-muted-foreground">{description}</p>
+            </div>
+            <div className="flex flex-col gap-2 w-full">
+              <Button variant="outline" className="w-full justify-center">
+                Download your file
+              </Button>
+              <Button className="w-full justify-center">
+                Talk to a professional
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Overall Analysis */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold">Overall Analysis</h2>
+          <p className="text-sm text-muted-foreground mt-1">Good views to grow your expertise.</p>
         </div>
 
-        {/* Right column - References */}
-        <div className="flex-1">
-          <Card className="sticky top-4">
-            <CardContent className="p-6">
-              <Tabs defaultValue="videos">
-                <TabsList className="w-full">
-                  <TabsTrigger value="videos">Videos</TabsTrigger>
-                  <TabsTrigger value="podcasts">Podcasts</TabsTrigger>
-                  <TabsTrigger value="articles">Articles</TabsTrigger>
-                  <TabsTrigger value="decks">Decks</TabsTrigger>
-                  <TabsTrigger value="books">Books</TabsTrigger>
-                </TabsList>
-                <ScrollArea className="h-[500px] mt-4">
-                  {Object.entries(references).map(([type, items]) => (
-                    <TabsContent key={type} value={type} className="mt-0">
-                      <div className="space-y-4">
-                        {items.map((ref: Reference, index: number) => (
-                          <Card key={index}>
-                            <CardContent className="p-4">
-                              <div className="flex gap-4">
-                                <div className="relative w-24 h-24 flex-shrink-0">
-                                  <Image
-                                    src={ref.image}
-                                    alt={ref.title}
-                                    fill
-                                    className="object-cover rounded-lg"
-                                  />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-semibold mb-1 truncate">{ref.title}</h4>
-                                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                                    {ref.summary}
-                                  </p>
-                                  <Button
-                                    variant="link"
-                                    className="h-auto p-0 text-primary"
-                                    asChild
-                                  >
-                                    <a
-                                      href={ref.link}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-1 hover:underline"
-                                    >
-                                      Learn more
-                                      <ExternalLink className="w-3 h-3" />
-                                    </a>
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </TabsContent>
-                  ))}
-                </ScrollArea>
-              </Tabs>
-            </CardContent>
-          </Card>
+        <div className="space-y-2">
+          {Object.entries(metrics).map(([key, value]) => (
+            <Card key={key} className="overflow-hidden">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <ChevronRight className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-sm mb-1">{areaNames[key as keyof Areas]}</h3>
+                    <p className="text-sm text-muted-foreground">{value.feedback}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
+      </div>
+
+      {/* References */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">References</h2>
+        <Tabs defaultValue="videos" className="w-full">
+          <TabsList className="w-full h-10 grid grid-cols-5 bg-muted rounded-lg p-1">
+            <TabsTrigger 
+              value="videos" 
+              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+            >
+              Videos
+            </TabsTrigger>
+            <TabsTrigger 
+              value="podcasts"
+              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+            >
+              Podcasts
+            </TabsTrigger>
+            <TabsTrigger 
+              value="decks"
+              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+            >
+              Decks
+            </TabsTrigger>
+            <TabsTrigger 
+              value="articles"
+              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+            >
+              Articles
+            </TabsTrigger>
+            <TabsTrigger 
+              value="books"
+              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+            >
+              Books
+            </TabsTrigger>
+          </TabsList>
+
+          {Object.entries(references).map(([type, items]) => (
+            <TabsContent key={type} value={type} className="mt-4">
+              <div className="grid grid-cols-1 gap-4">
+                {items.map((ref: Reference, index: number) => (
+                  <Card key={index} className="overflow-hidden">
+                    <div className="relative aspect-video w-full bg-muted">
+                      <Image
+                        src={ref.image}
+                        alt={ref.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="font-medium text-sm mb-1">{ref.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        {ref.summary}
+                      </p>
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-primary"
+                        asChild
+                      >
+                        <a
+                          href={ref.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium hover:underline"
+                        >
+                          Learn more
+                        </a>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
     </div>
   )

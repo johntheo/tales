@@ -122,10 +122,10 @@ export function FeedbackContent({
     }
   }
 
-  if (feedback.status === 'upload') {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="w-full max-w-5xl mx-auto flex items-center justify-center min-h-[calc(100vh-8rem)]">
+  return (
+    <div className="min-h-screen">
+      {feedback.status === 'upload' && (
+        <div className="min-h-[calc(100vh-4rem)] grid place-items-center px-4">
           <div className="w-full max-w-2xl">
             <UploadForm 
               onSubmit={onUpload}
@@ -133,80 +133,67 @@ export function FeedbackContent({
             />
           </div>
         </div>
-      </div>
-    )
-  }
+      )}
 
-  if (feedback.status === 'processing') {
-    if (status === "failed" || status === "cancelled" || status === "expired") {
-      return (
-        <div className="h-full flex items-center justify-center">
-          <div className="w-full max-w-5xl mx-auto flex items-center justify-center min-h-[calc(100vh-8rem)]">
-            <div className="w-full max-w-2xl">
+      {feedback.status === 'processing' && (
+        <div className="min-h-[calc(100vh-4rem)] grid place-items-center px-4">
+          <div className="w-full max-w-2xl">
+            {(status === "failed" || status === "cancelled" || status === "expired") ? (
               <Alert variant="destructive">
+                <AlertTitle>Error</AlertTitle>
                 <AlertDescription>
                   An error occurred while processing your feedback. Please try again.
                 </AlertDescription>
               </Alert>
-            </div>
+            ) : (
+              <LoadingScreen 
+                title={getStatusMessage(status)}
+                description="Our AI is carefully reviewing your work to provide detailed feedback and suggestions for improvement. This usually takes about a minute."
+              />
+            )}
           </div>
         </div>
-      )
-    }
+      )}
 
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="w-full max-w-5xl mx-auto flex items-center justify-center min-h-[calc(100vh-8rem)]">
-          <div className="w-full max-w-2xl">
-            <LoadingScreen 
-              title={getStatusMessage(status)}
-              description="Our AI is carefully reviewing your work to provide detailed feedback and suggestions for improvement. This usually takes about a minute."
-            />
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (feedback.status === 'ready') {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="w-full max-w-5xl mx-auto flex items-center justify-center min-h-[calc(100vh-8rem)]">
+      {feedback.status === 'ready' && (
+        <div className="min-h-[calc(100vh-4rem)] grid place-items-center px-4">
           <PeelCard
             onReveal={onReveal}
             gradient="linear-gradient(135deg, #6B63B5 0%, #5D56A6 100%)"
             name="Your Feedback"
             role="is ready"
-            width={isMobile ? 320 : 640}
-            height={isMobile ? 180 : 360}
+            width={isMobile ? 280 : 640}
+            height={isMobile ? 160 : 360}
           />
         </div>
-      </div>
-    )
-  }
+      )}
 
-  return (
-    <div className="p-4 md:p-6">
-      <FeedbackEntry
-        fileName={feedback.title}
-        description="Here's what our AI found in your content"
-        metrics={feedback.areas || {
-          clarity: { score: 0, feedback: '' },
-          technical_skills: { score: 0, feedback: '' },
-          innovation: { score: 0, feedback: '' },
-          user_focus: { score: 0, feedback: '' },
-          storytelling: { score: 0, feedback: '' }
-        }}
-        references={feedback.references || {
-          videos: [],
-          podcasts: [],
-          articles: [],
-          decks: [],
-          books: []
-        }}
-        feedbackImage={feedback.imageUrl}
-        isLoaded={true}
-      />
+      {feedback.status === 'viewed' && (
+        <main className="min-h-[calc(100vh-4rem)]">
+          <div className="container mx-auto py-8 md:py-12">
+            <FeedbackEntry
+              fileName={feedback.title}
+              description="Here's what our AI found in your content"
+              metrics={feedback.areas || {
+                clarity: { score: 0, feedback: '' },
+                technical_skills: { score: 0, feedback: '' },
+                innovation: { score: 0, feedback: '' },
+                user_focus: { score: 0, feedback: '' },
+                storytelling: { score: 0, feedback: '' }
+              }}
+              references={feedback.references || {
+                videos: [],
+                podcasts: [],
+                articles: [],
+                decks: [],
+                books: []
+              }}
+              feedbackImage={feedback.imageUrl}
+              isLoaded={true}
+            />
+          </div>
+        </main>
+      )}
     </div>
   )
 } 
