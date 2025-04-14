@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from "openai";
+import * as cheerio from 'cheerio';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -7,6 +8,7 @@ const openai = new OpenAI({
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
+const MAX_PAGES = 5;
 
 async function retryOperation<T>(operation: () => Promise<T>, retries = MAX_RETRIES): Promise<T> {
   try {
@@ -27,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   try {
     if (contentType.includes('multipart/form-data')) {
-      console.log('Handling PDF upload'); 
+      console.log('Handling PDF upload');
       return handlePdfUpload(req);
     } else if (contentType.includes('application/json')) {
       console.log('Handling link submission');
@@ -38,7 +40,7 @@ export async function POST(req: NextRequest) {
     }
   } catch (error) {
     console.error('Error processing request:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: error instanceof Error ? error.message : 'An unexpected error occurred',
       details: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
@@ -94,8 +96,54 @@ export async function GET(req: NextRequest) {
   });
 }
 
+// 🧠 Função comum que faz crawle de um link
+async function crawlPortfolio(startUrl: string): Promise<string> {
+  const visited = new Set<string>();
+  const queue = [startUrl];
+  const contents: string[] = [];
+
+  const base = new URL(startUrl);
+  const origin = base.origin;
+
+  while (queue.length > 0 && contents.length < MAX_PAGES) {
+    const currentUrl = queue.shift();
+    if (!currentUrl || visited.has(currentUrl)) continue;
+
+    visited.add(currentUrl);
+
+    try {
+      const res = await fetch(currentUrl);
+      const html = await res.text();
+      const $ = cheerio.load(html);
+
+      const text = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 6000);
+
+      contents.push(`PAGE: ${currentUrl}\n${text}`);
+
+      $('a[href]').each((_, el) => {
+        const href = $(el).attr('href');
+        if (!href) return;
+
+        const fullUrl = href.startsWith('http')
+          ? href
+          : href.startsWith('/')
+            ? `${origin}${href}`
+            : null;
+
+        if (fullUrl && fullUrl.startsWith(origin) && !visited.has(fullUrl)) {
+          queue.push(fullUrl);
+        }
+      });
+    } catch (err) {
+      console.warn(`Erro ao acessar ${currentUrl}`, err);
+    }
+  }
+
+  return contents.join('\n\n---\n\n');
+}
+
 // 🟡 1. Análise de PDF enviado via form
-async function handlePdfUpload(req: NextRequest) {  
+async function handlePdfUpload(req: NextRequest) {
   const formData = await req.formData();
   const file = formData.get('file') as File;
 
@@ -119,7 +167,7 @@ async function handlePdfUpload(req: NextRequest) {
         type: file.type,
         lastModified: file.lastModified
       });
-      
+
       return await openai.files.create({
         file: fileObject,
         purpose: 'assistants'
@@ -138,7 +186,7 @@ async function handlePdfUpload(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error in PDF upload:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: error instanceof Error ? error.message : 'Failed to process PDF file',
       details: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
@@ -152,15 +200,16 @@ async function handleLinkSubmission(req: NextRequest) {
   if (!url) {
     return NextResponse.json({ error: 'Missing URL.' }, { status: 400 });
   }
-
   try {
     // Create thread and send message with the link
+    const text = await crawlPortfolio(url);
+    
     return createThreadAndRun({
-      content: `Please analyze the portfolio available at the following link:\n\n${url}`,
+      content: `Please analyze the portfolio content:\n\n${text}`,
     });
   } catch (error) {
     console.error('Error in link submission:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: error instanceof Error ? error.message : 'Failed to process URL',
       details: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
@@ -178,17 +227,17 @@ async function createThreadAndRun({
   try {
     // Create thread
     console.log('Creating thread');
-    const thread = await retryOperation(() => 
+    const thread = await retryOperation(() =>
       openai.beta.threads.create()
     );
 
     // Create message
     console.log('Creating message');
-    const message = await retryOperation(() => 
+    const message = await retryOperation(() =>
       openai.beta.threads.messages.create(thread.id, {
         role: 'user',
         content,
-        attachments: file_ids ? file_ids.map(id => ({ 
+        attachments: file_ids ? file_ids.map(id => ({
           file_id: id,
           tools: [{ type: "file_search" }]
         })) : undefined
@@ -197,7 +246,7 @@ async function createThreadAndRun({
 
     // Execute assistant
     console.log('Executing assistant');
-    const run = await retryOperation(() => 
+    const run = await retryOperation(() =>
       openai.beta.threads.runs.create(thread.id, {
         assistant_id: process.env.OPENAI_ASSISTANT_ID!,
       })
