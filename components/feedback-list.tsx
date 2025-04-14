@@ -54,7 +54,7 @@ export function FeedbackList({
                 <div className="flex items-center w-full max-w-[250px] pr-1">
                   <div className="flex-1 min-w-0 pr-2">
                     <span className="font-medium block truncate">
-                      {isUploadItem ? 'New Feedback...' : feedback.title}
+                      {isUploadItem ? 'Ready for upload...' : feedback.title}
                     </span>
                   </div>
                   {showDelete && (

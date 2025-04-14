@@ -103,10 +103,10 @@ export function DashboardLayout({
           <SidebarHeader />
           <div className="flex-1 overflow-hidden p-2 flex flex-col">
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={onNewFeedback}
-              className="w-full mb-2 text-sm justify-start gap-2"
+              className="w-full mb-2 text-sm justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm"
             >
               <Plus className="h-4 w-4" />
               New Feedback
@@ -135,13 +135,13 @@ export function DashboardLayout({
                 <SidebarHeader />
                 <div className="flex-1 overflow-hidden p-2 flex flex-col">
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="sm"
                     onClick={() => {
                       onNewFeedback();
                       setIsDrawerOpen(false);
                     }}
-                    className="w-full mb-2 text-sm justify-start gap-2"
+                    className="w-full mb-2 text-sm justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm"
                   >
                     <Plus className="h-4 w-4" />
                     New Feedback
@@ -168,7 +168,7 @@ export function DashboardLayout({
               variant="default"
               size="sm"
               onClick={onNewFeedback}
-              className="shrink-0"
+              className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm"
             >
               <Plus className="h-4 w-4 mr-2" />
               New
