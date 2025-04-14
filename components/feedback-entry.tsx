@@ -48,7 +48,6 @@ export interface References {
   videos: Reference[]
   podcasts: Reference[]
   articles: Reference[]
-  decks: Reference[]
   books: Reference[]
 }
 
@@ -268,7 +267,7 @@ export function FeedbackEntry({
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">References</h2>
         <Tabs defaultValue="videos" className="w-full">
-          <TabsList className="w-full h-10 grid grid-cols-5 bg-muted rounded-lg p-1">
+          <TabsList className="w-full h-10 grid grid-cols-4 bg-muted rounded-lg p-1">
             <TabsTrigger 
               value="videos" 
               className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
@@ -280,12 +279,6 @@ export function FeedbackEntry({
               className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
             >
               Podcasts
-            </TabsTrigger>
-            <TabsTrigger 
-              value="decks"
-              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
-            >
-              Decks
             </TabsTrigger>
             <TabsTrigger 
               value="articles"

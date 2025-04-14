@@ -5,13 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { formatDistanceToNow } from "date-fns"
 import { Trash2 } from "lucide-react"
-
-interface FeedbackItem {
-  id: string
-  title: string
-  date: Date
-  status: 'upload' | 'processing' | 'ready' | 'viewed'
-}
+import { FeedbackItem } from "@/app/dashboard/page"
 
 interface FeedbackListProps {
   items: FeedbackItem[]

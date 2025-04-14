@@ -11,8 +11,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
 import { usePollingStatus } from "@/hooks/usePollingStatus"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
+import { Reference } from "@/components/feedback-entry"
 
-interface FeedbackData {
+export interface FeedbackData {
   id: string
   title: string
   status: 'upload' | 'processing' | 'ready' | 'viewed'
@@ -43,37 +45,11 @@ interface FeedbackData {
       feedback: string
     }
   }
-  references?: {
-    videos: Array<{
-      title: string
-      summary: string
-      image: string
-      link: string
-    }>
-    podcasts: Array<{
-      title: string
-      summary: string
-      image: string
-      link: string
-    }>
-    articles: Array<{
-      title: string
-      summary: string
-      image: string
-      link: string
-    }>
-    decks: Array<{
-      title: string
-      summary: string
-      image: string
-      link: string
-    }>
-    books: Array<{
-      title: string
-      summary: string
-      image: string
-      link: string
-    }>
+  references: {
+    videos: Reference[]
+    podcasts: Reference[]
+    articles: Reference[]
+    books: Reference[]
   }
   imageUrl?: string
   threadId?: string
@@ -181,13 +157,7 @@ export function FeedbackContent({
                 user_focus: { score: 0, feedback: '' },
                 storytelling: { score: 0, feedback: '' }
               }}
-              references={feedback.references || {
-                videos: [],
-                podcasts: [],
-                articles: [],
-                decks: [],
-                books: []
-              }}
+              references={feedback.references}
               feedbackImage={feedback.imageUrl}
               isLoaded={true}
             />

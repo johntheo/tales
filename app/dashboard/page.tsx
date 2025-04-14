@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { FeedbackList } from "@/components/feedback-list"
 import { FeedbackContent } from "@/components/feedback-content"
+import { findRelevantReferences, type BookReference } from "../utils/reference-matcher"
+import { generatePatternUrl } from "../utils/image-generator"
+import { Reference } from "@/components/feedback-entry"
 
-interface FeedbackItem {
+export interface FeedbackItem {
   id: string
   title: string
   date: Date
@@ -38,37 +41,11 @@ interface FeedbackItem {
       feedback: string
     }
   }
-  references?: {
-    videos: Array<{
-      title: string
-      summary: string
-      image: string
-      link: string
-    }>
-    podcasts: Array<{
-      title: string
-      summary: string
-      image: string
-      link: string
-    }>
-    articles: Array<{
-      title: string
-      summary: string
-      image: string
-      link: string
-    }>
-    decks: Array<{
-      title: string
-      summary: string
-      image: string
-      link: string
-    }>
-    books: Array<{
-      title: string
-      summary: string
-      image: string
-      link: string
-    }>
+  references: {
+    videos: Reference[]
+    podcasts: Reference[]
+    articles: Reference[]
+    books: Reference[]
   }
   imageUrl?: string
   threadId?: string
@@ -86,7 +63,13 @@ export default function DashboardPage() {
       id: Date.now().toString(),
       title: "New Feedback",
       date: new Date(),
-      status: 'upload'
+      status: 'upload',
+      references: {
+        videos: [],
+        podcasts: [],
+        articles: [],
+        books: []
+      }
     }
     
     setFeedbacks(prev => [newFeedback, ...prev])
@@ -116,14 +99,23 @@ export default function DashboardPage() {
       console.log('Raw output:', output); // Log the raw output for debugging
       const feedbackData = JSON.parse(output.trim()); // Trim any whitespace
       
+      // Find relevant references based on feedback
+      const relevantRefs = findRelevantReferences(feedbackData.areas, feedbackData.summary);
+      
       const updatedFeedback: FeedbackItem = {
         ...currentFeedback,
         status: 'ready',
         title: "Your Portfolio Analysis",
         summary: feedbackData.summary,
         areas: feedbackData.areas,
-        references: feedbackData.references,
-        imageUrl: "https://picsum.photos/400/300?random=1"
+        references: {
+          ...feedbackData.references,
+          books: relevantRefs.books,
+          articles: relevantRefs.articles,
+          podcasts: relevantRefs.podcasts,
+          videos: relevantRefs.videos
+        },
+        imageUrl: generatePatternUrl(Date.now()) // Use current timestamp as seed
       }
 
       setFeedbacks(prev => prev.map(feedback => 
