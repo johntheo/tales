@@ -73,28 +73,28 @@ export function FeedbackEntry({
   const areaConfig: Record<keyof Areas, { name: string; icon: React.ReactNode; color: string }> = {
     clarity: { 
       name: "Clarity & Structure", 
-      icon: <Layout className="h-4 w-4" />,
-      color: "#FF6B6B" // Coral Red
+      icon: <Layout className="h-5 w-5" />,
+      color: "#FF6B6B"
     },
     technical_skills: { 
       name: "Technical Skills", 
-      icon: <Code2 className="h-4 w-4" />,
-      color: "#4ECDC4" // Mint
+      icon: <Code2 className="h-5 w-5" />,
+      color: "#4ECDC4"
     },
     innovation: { 
       name: "Innovation", 
-      icon: <Lightbulb className="h-4 w-4" />,
-      color: "#45B7D1" // Sky Blue
+      icon: <Lightbulb className="h-5 w-5" />,
+      color: "#45B7D1"
     },
     user_focus: { 
       name: "User Focus", 
-      icon: <Users className="h-4 w-4" />,
-      color: "#96CEB4" // Sage Green
+      icon: <Users className="h-5 w-5" />,
+      color: "#96CEB4"
     },
     storytelling: { 
       name: "Storytelling", 
-      icon: <BookText className="h-4 w-4" />,
-      color: "#D4A5A5" // Dusty Rose
+      icon: <BookText className="h-5 w-5" />,
+      color: "#D4A5A5"
     }
   }
 
@@ -109,8 +109,14 @@ export function FeedbackEntry({
     const area = areaConfig[payload.value as keyof Areas]
     return (
       <g transform={`translate(${x},${y})`}>
-        <foreignObject x="-12" y="-12" width="24" height="24">
-          <div className="h-6 w-6 rounded-full flex items-center justify-center" style={{ backgroundColor: area.color }}>
+        <foreignObject x="-16" y="-16" width="32" height="32">
+          <div 
+            className="h-8 w-8 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-110" 
+            style={{ 
+              backgroundColor: area.color,
+              boxShadow: `0 2px 8px ${area.color}40`
+            }}
+          >
             {area.icon}
           </div>
         </foreignObject>
@@ -200,31 +206,55 @@ export function FeedbackEntry({
             <div className="text-center mb-2">
               <h3 className="text-sm font-medium">Score Overview</h3>
             </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <RadarChart cx="50%" cy="50%" outerRadius="65%" data={radarData}>
-                <PolarGrid gridType="circle" />
-                <PolarAngleAxis
-                  dataKey="subject"
-                  tick={<CustomAxisTick />}
-                />
-                <PolarRadiusAxis
-                  angle={30}
-                  domain={[0, 10]}
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  axisLine={false}
-                />
-                {Object.entries(areaConfig).map(([key, config]) => (
-                  <Radar
-                    key={key}
-                    name={config.name}
-                    dataKey="score"
-                    stroke={config.color}
-                    fill={config.color}
-                    fillOpacity={0.3}
+            <div className="relative w-full aspect-square max-w-[300px] mx-auto">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart 
+                  cx="50%" 
+                  cy="50%" 
+                  outerRadius="70%" 
+                  data={radarData}
+                  style={{ fontSize: 12 }}
+                >
+                  <PolarGrid 
+                    gridType="circle"
+                    stroke="hsl(var(--border))"
+                    strokeDasharray="4 4"
+                    strokeOpacity={0.6}
+                    radialLines={true}
                   />
-                ))}
-              </RadarChart>
-            </ResponsiveContainer>
+                  <PolarAngleAxis
+                    dataKey="subject"
+                    tick={<CustomAxisTick />}
+                    tickLine={false}
+                    axisLine={{ stroke: 'hsl(var(--border))', strokeOpacity: 0.6 }}
+                  />
+                  <PolarRadiusAxis
+                    angle={-150}
+                    domain={[0, 10]}
+                    tickCount={6}
+                    tick={{ 
+                      fill: 'hsl(var(--muted-foreground))',
+                      fontSize: 11,
+                      fontWeight: 500,
+                      opacity: 0.8,
+                      dy: -3
+                    }}
+                    axisLine={false}
+                  />
+                  {Object.entries(areaConfig).map(([key, config]) => (
+                    <Radar
+                      key={key}
+                      name={config.name}
+                      dataKey="score"
+                      stroke={config.color}
+                      strokeWidth={2}
+                      fill={config.color}
+                      fillOpacity={0.15}
+                    />
+                  ))}
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
             <div className="mt-6 grid grid-cols-2 gap-3 text-xs">
               {Object.entries(areaConfig).map(([key, config]) => (
                 <div key={key} className="flex items-center gap-2" title={config.name}>
@@ -241,20 +271,36 @@ export function FeedbackEntry({
           <div className="lg:w-3/4">
             <Accordion type="single" defaultValue="clarity" className="w-full">
               {Object.entries(metrics).map(([key, value]) => (
-                <AccordionItem key={key} value={key}>
-                  <AccordionTrigger className="hover:no-underline [&>svg]:hidden group">
-                    <div className="flex items-center gap-3">
+                <AccordionItem key={key} value={key} className="border-b last:border-b-0">
+                  <AccordionTrigger className="hover:no-underline group py-4 transition-colors hover:bg-muted/50 data-[state=open]:bg-muted/50">
+                    <div className="flex items-center gap-3 w-full">
                       <div 
-                        className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-white"
+                        className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-white transition-transform group-hover:scale-105 group-data-[state=open]:scale-110 shadow-sm" 
                         style={{ backgroundColor: areaConfig[key as keyof Areas].color }}
                       >
                         {areaConfig[key as keyof Areas].icon}
                       </div>
-                      <span className="font-medium text-sm">{areaConfig[key as keyof Areas].name}</span>
+                      <div className="flex flex-col items-start gap-1 flex-1">
+                        <span className="font-medium text-sm group-data-[state=open]:text-primary">
+                          {areaConfig[key as keyof Areas].name}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 rounded-full bg-muted-foreground/20 w-[100px]">
+                            <div 
+                              className="h-full rounded-full transition-all" 
+                              style={{ 
+                                width: `${value.score * 10}%`,
+                                backgroundColor: areaConfig[key as keyof Areas].color 
+                              }}
+                            />
+                          </div>
+                          <span className="text-xs text-muted-foreground">{value.score}/10</span>
+                        </div>
+                      </div>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent>
-                    <p className="text-sm text-muted-foreground pl-11">{value.feedback}</p>
+                  <AccordionContent className="py-4 px-11">
+                    <p className="text-sm text-muted-foreground">{value.feedback}</p>
                   </AccordionContent>
                 </AccordionItem>
               ))}
