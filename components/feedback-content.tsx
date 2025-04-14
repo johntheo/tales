@@ -173,7 +173,7 @@ export function FeedbackContent({
           <div className="container mx-auto py-8 md:py-12">
             <FeedbackEntry
               fileName={feedback.title}
-              description="Here's what our AI found in your content"
+              description={feedback.summary || "Here's what our AI found in your content"}
               metrics={feedback.areas || {
                 clarity: { score: 0, feedback: '' },
                 technical_skills: { score: 0, feedback: '' },

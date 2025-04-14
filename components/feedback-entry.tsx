@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { ExternalLink, ChevronRight } from "lucide-react"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 interface Areas {
   clarity: {
@@ -89,28 +90,30 @@ export function FeedbackEntry({
       {/* File Preview */}
       <Card className="overflow-hidden">
         <CardContent className="p-0">
-          {feedbackImage && (
-            <div className="relative w-full aspect-[16/9]">
-              <Image
-                src={feedbackImage}
-                alt={fileName}
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
-          <div className="p-4 space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold mb-1">{fileName}</h2>
-              <p className="text-sm text-muted-foreground">{description}</p>
-            </div>
-            <div className="flex flex-col gap-2 w-full">
-              <Button variant="outline" className="w-full justify-center">
-                Download your file
-              </Button>
-              <Button className="w-full justify-center">
-                Talk to a professional
-              </Button>
+          <div className="flex flex-col md:flex-row">
+            {feedbackImage && (
+              <div className="relative w-full md:w-1/4 aspect-[16/9]">
+                <Image
+                  src={feedbackImage}
+                  alt={fileName}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
+            <div className="p-4 space-y-4 md:w-3/4">
+              <div>
+                <h2 className="text-xl font-semibold mb-1">{fileName}</h2>
+                <p className="text-sm text-muted-foreground">{description}</p>
+              </div>
+              <div className="flex flex-col md:flex-row gap-2 w-full">
+                <Button variant="outline" className="w-full md:w-1/2 justify-center">
+                  Download your file
+                </Button>
+                <Button className="w-full md:w-1/2 justify-center">
+                  Talk to a professional
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -123,23 +126,23 @@ export function FeedbackEntry({
           <p className="text-sm text-muted-foreground mt-1">Good views to grow your expertise.</p>
         </div>
 
-        <div className="space-y-2">
+        <Accordion type="single" defaultValue="clarity" className="w-full">
           {Object.entries(metrics).map(([key, value]) => (
-            <Card key={key} className="overflow-hidden">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
+            <AccordionItem key={key} value={key}>
+              <AccordionTrigger className="hover:no-underline [&>svg]:hidden group">
+                <div className="flex items-center gap-3">
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <ChevronRight className="h-5 w-5 text-primary" />
+                    <ChevronRight className="h-5 w-5 text-primary transition-transform duration-200 group-data-[state=open]:rotate-90" />
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="font-medium text-sm mb-1">{areaNames[key as keyof Areas]}</h3>
-                    <p className="text-sm text-muted-foreground">{value.feedback}</p>
-                  </div>
+                  <span className="font-medium text-sm">{areaNames[key as keyof Areas]}</span>
                 </div>
-              </CardContent>
-            </Card>
+              </AccordionTrigger>
+              <AccordionContent>
+                <p className="text-sm text-muted-foreground pl-11">{value.feedback}</p>
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
+        </Accordion>
       </div>
 
       {/* References */}
@@ -181,7 +184,7 @@ export function FeedbackEntry({
 
           {Object.entries(references).map(([type, items]) => (
             <TabsContent key={type} value={type} className="mt-4">
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-[1200px] mx-auto">
                 {items.map((ref: Reference, index: number) => (
                   <Card key={index} className="overflow-hidden">
                     <div className="relative aspect-video w-full bg-muted">
@@ -193,7 +196,7 @@ export function FeedbackEntry({
                       />
                     </div>
                     <CardContent className="p-4">
-                      <h3 className="font-medium text-sm mb-1">{ref.title}</h3>
+                      <h3 className="font-medium text-sm mb-1 line-clamp-1">{ref.title}</h3>
                       <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                         {ref.summary}
                       </p>
