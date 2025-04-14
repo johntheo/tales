@@ -12,6 +12,12 @@ export function generatePatternUrl(seed: number): string {
   const colorIndex = seed % colors.length
   const [color1, color2] = colors[colorIndex]
   
+  // Check if we're in a browser environment
+  if (typeof window === 'undefined') {
+    // Return a placeholder gradient URL for server-side rendering
+    return `linear-gradient(135deg, ${color1}, ${color2})`
+  }
+  
   // Create a canvas element
   const canvas = document.createElement('canvas')
   canvas.width = 1440
