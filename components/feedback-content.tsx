@@ -72,7 +72,8 @@ export function FeedbackContent({
   const isMobile = useMediaQuery("(max-width: 768px)")
   const { status, output } = usePollingStatus(
     feedback.status === 'processing' && feedback.threadId ? feedback.threadId : '',
-    feedback.status === 'processing' && feedback.runId ? feedback.runId : ''
+    feedback.status === 'processing' && feedback.runId ? feedback.runId : '',
+    feedback.formData?.link || feedback.formData?.file?.name
   )
 
   useEffect(() => {

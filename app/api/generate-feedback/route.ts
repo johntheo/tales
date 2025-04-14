@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from "openai";
 import * as cheerio from 'cheerio';
+import { ProcessingCache } from '@/lib/cache';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -142,6 +143,13 @@ async function crawlPortfolio(startUrl: string): Promise<string> {
   return contents.join('\n\n---\n\n');
 }
 
+interface ThreadAndRunResult {
+  thread_id: string
+  run_id: string
+  message_id: string
+  file_ids?: string[]
+}
+
 // 🟡 1. Análise de PDF enviado via form
 async function handlePdfUpload(req: NextRequest) {
   const formData = await req.formData();
@@ -164,12 +172,32 @@ async function handlePdfUpload(req: NextRequest) {
   const buffer = Buffer.from(arrayBuffer);
 
   try {
+    console.log('Processing PDF upload for file:', file.name);
+    
+    // Create a unique identifier for the file
+    const fileIdentifier = `file:${Buffer.from(await file.arrayBuffer()).toString('base64')}`;
+    console.log('Generated file identifier:', fileIdentifier);
+
+    // Check cache first
+    const cached = ProcessingCache.get(fileIdentifier);
+    console.log('Cache check result:', cached);
+    
+    if (cached) {
+      console.log('Using cached result for file:', file.name);
+      return NextResponse.json({
+        thread_id: cached.threadId,
+        run_id: cached.runId,
+        cached: true
+      });
+    }
+
+    console.log('No cache found, processing file:', file.name);
+    
     // Upload file to OpenAI
     console.log('Uploading file to OpenAI');
     const uploadedFile = await retryOperation(async () => {
-      // Create a File object that implements the required interface
       const fileObject = new File([buffer], file.name, {
-        type: 'application/pdf', // Force the correct MIME type
+        type: 'application/pdf',
         lastModified: file.lastModified
       });
 
@@ -185,10 +213,19 @@ async function handlePdfUpload(req: NextRequest) {
 
     // Create thread and run assistant
     console.log('Creating thread and running assistant');
-    return createThreadAndRun({
+    const result = await createThreadAndRun({
       content: 'The portfolio is in the uploaded PDF file. Please analyze it in detail.',
       file_ids: [uploadedFile.id],
     });
+
+    console.log('Storing result in cache for file:', file.name);
+    // Store in cache
+    ProcessingCache.set(fileIdentifier, {
+      threadId: result.thread_id,
+      runId: result.run_id
+    });
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error in PDF upload:', error);
     return NextResponse.json({
@@ -205,13 +242,40 @@ async function handleLinkSubmission(req: NextRequest) {
   if (!url) {
     return NextResponse.json({ error: 'Missing URL.' }, { status: 400 });
   }
+
   try {
-    // Create thread and send message with the link
+    console.log('Processing link submission for URL:', url);
+    
+    // Check cache first
+    const cached = ProcessingCache.get(url);
+    console.log('Cache check result:', cached);
+    
+    if (cached) {
+      console.log('Using cached result for URL:', url);
+      return NextResponse.json({
+        thread_id: cached.threadId,
+        run_id: cached.runId,
+        cached: true
+      });
+    }
+
+    console.log('No cache found, processing URL:', url);
+    
+    // If not in cache, process normally
     const text = await crawlPortfolio(url);
     
-    return createThreadAndRun({
+    const result = await createThreadAndRun({
       content: `Please analyze the portfolio content:\n\n${text}`,
     });
+
+    console.log('Storing result in cache for URL:', url);
+    // Store in cache
+    ProcessingCache.set(url, {
+      threadId: result.thread_id,
+      runId: result.run_id
+    });
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error in link submission:', error);
     return NextResponse.json({
@@ -228,7 +292,7 @@ async function createThreadAndRun({
 }: {
   content: string;
   file_ids?: string[];
-}) {
+}): Promise<ThreadAndRunResult> {
   try {
     // Create thread
     console.log('Creating thread');
@@ -259,12 +323,12 @@ async function createThreadAndRun({
 
     console.log('Run response:', run);
 
-    return NextResponse.json({
+    return {
       thread_id: thread.id,
       run_id: run.id,
       message_id: message.id,
-      ...(file_ids ? { file_ids } : {}),
-    });
+      ...(file_ids ? { file_ids } : {})
+    };
   } catch (error) {
     console.error('Error in thread creation:', error);
     throw error;

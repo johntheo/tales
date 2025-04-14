@@ -2,19 +2,19 @@
 
 import { useState, useEffect } from "react"
 
-type Status = "queued" | "in_progress" | "completed" | "failed" | "cancelled" | "expired" | "loading"
+type Status = "loading" | "queued" | "in_progress" | "completed" | "failed" | "cancelled" | "expired"
 
 interface PollingResponse {
   status: Status
   output?: string
+  error?: string
 }
 
-export function usePollingStatus(threadId: string, runId: string) {
+export function usePollingStatus(threadId: string, runId: string, identifier?: string) {
   const [status, setStatus] = useState<Status>("loading")
   const [output, setOutput] = useState<string>("")
 
   useEffect(() => {
-    
     if (!threadId || !runId) {
       console.warn("Missing threadId or runId")
       return
@@ -24,7 +24,14 @@ export function usePollingStatus(threadId: string, runId: string) {
 
     const pollStatus = async () => {
       try {
-        const response = await fetch(`/api/check-status?threadId=${threadId}&runId=${runId}`)
+        const url = new URL("/api/check-status", window.location.origin)
+        url.searchParams.append("threadId", threadId)
+        url.searchParams.append("runId", runId)
+        if (identifier) {
+          url.searchParams.append("identifier", identifier)
+        }
+
+        const response = await fetch(url.toString())
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
@@ -57,7 +64,7 @@ export function usePollingStatus(threadId: string, runId: string) {
       setStatus("loading")
       setOutput("")
     }
-  }, [threadId, runId])
+  }, [threadId, runId, identifier])
 
   return { status, output }
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import OpenAI from "openai"
+import { ProcessingCache } from "@/lib/cache"
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -26,6 +27,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const threadId = searchParams.get("threadId")
     const runId = searchParams.get("runId")
+    const identifier = searchParams.get("identifier")
 
     if (!threadId || !runId) {
       return NextResponse.json(
@@ -34,7 +36,22 @@ export async function GET(request: Request) {
       )
     }
 
-    console.log("Checking status for:", { threadId, runId })
+    console.log("Checking status for:", { threadId, runId, identifier })
+    
+    // If we have an identifier, check the cache first
+    if (identifier) {
+      console.log('Checking cache for identifier:', identifier)
+      const cached = ProcessingCache.get(identifier)
+      console.log('Cache check result:', cached)
+      
+      if (cached?.output) {
+        console.log("Using cached output for:", identifier)
+        return NextResponse.json({
+          status: "completed",
+          output: cached.output
+        })
+      }
+    }
     
     const run = await retryOperation(() => 
       openai.beta.threads.runs.retrieve(threadId, runId)
@@ -67,6 +84,16 @@ export async function GET(request: Request) {
             { error: "Invalid response format from assistant" },
             { status: 500 }
           )
+        }
+
+        // If we have an identifier and the run is completed, update the cache
+        if (identifier) {
+          console.log('Storing completed result in cache for:', identifier)
+          ProcessingCache.set(identifier, {
+            threadId,
+            runId,
+            output
+          })
         }
       }
     }
