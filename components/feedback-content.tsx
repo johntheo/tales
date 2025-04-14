@@ -124,15 +124,15 @@ export function FeedbackContent({
 
   if (feedback.status === 'upload') {
     return (
-      <div className="h-full flex items-center justify-center p-4">
-        <Card className="w-full max-w-2xl">
-          <CardContent className="p-6">
+      <div className="h-full flex items-center justify-center">
+        <div className="w-full max-w-5xl mx-auto flex items-center justify-center min-h-[calc(100vh-8rem)]">
+          <div className="w-full max-w-2xl">
             <UploadForm 
               onSubmit={onUpload}
               initialData={feedback.formData}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     )
   }
@@ -140,30 +140,38 @@ export function FeedbackContent({
   if (feedback.status === 'processing') {
     if (status === "failed" || status === "cancelled" || status === "expired") {
       return (
-        <div className="h-full flex items-center justify-center p-4">
-          <Alert variant="destructive">
-            <AlertDescription>
-              An error occurred while processing your feedback. Please try again.
-            </AlertDescription>
-          </Alert>
+        <div className="h-full flex items-center justify-center">
+          <div className="w-full max-w-5xl mx-auto flex items-center justify-center min-h-[calc(100vh-8rem)]">
+            <div className="w-full max-w-2xl">
+              <Alert variant="destructive">
+                <AlertDescription>
+                  An error occurred while processing your feedback. Please try again.
+                </AlertDescription>
+              </Alert>
+            </div>
+          </div>
         </div>
       )
     }
 
     return (
-      <div className="h-full flex items-center justify-center p-4">
-        <LoadingScreen 
-          title={getStatusMessage(status)}
-          description="Our AI is carefully reviewing your work to provide detailed feedback and suggestions for improvement. This usually takes about a minute."
-        />
+      <div className="h-full flex items-center justify-center">
+        <div className="w-full max-w-5xl mx-auto flex items-center justify-center min-h-[calc(100vh-8rem)]">
+          <div className="w-full max-w-2xl">
+            <LoadingScreen 
+              title={getStatusMessage(status)}
+              description="Our AI is carefully reviewing your work to provide detailed feedback and suggestions for improvement. This usually takes about a minute."
+            />
+          </div>
+        </div>
       </div>
     )
   }
 
   if (feedback.status === 'ready') {
     return (
-      <div className="p-4 md:p-6">
-        <div className="w-full max-w-5xl mx-auto">
+      <div className="h-full flex items-center justify-center">
+        <div className="w-full max-w-5xl mx-auto flex items-center justify-center min-h-[calc(100vh-8rem)]">
           <PeelCard
             onReveal={onReveal}
             gradient="linear-gradient(135deg, #6B63B5 0%, #5D56A6 100%)"
