@@ -12,7 +12,7 @@ import { Reference } from "@/components/feedback-entry"
 export interface FeedbackItem {
   id: string
   title: string
-  date: Date
+  date: string
   status: 'upload' | 'processing' | 'ready' | 'viewed'
   formData?: {
     link?: string
@@ -54,7 +54,21 @@ export interface FeedbackItem {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([])
+  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>(() => {
+    const initialFeedback: FeedbackItem = {
+      id: Date.now().toString(),
+      title: "New Feedback",
+      date: new Date().toISOString(),
+      status: 'upload',
+      references: {
+        videos: [],
+        podcasts: [],
+        articles: [],
+        books: []
+      }
+    }
+    return [initialFeedback]
+  })
   const [currentFeedback, setCurrentFeedback] = useState<FeedbackItem | null>(null)
   const userEmail = "john@example.com"
 
@@ -62,7 +76,7 @@ export default function DashboardPage() {
     const newFeedback: FeedbackItem = {
       id: Date.now().toString(),
       title: "New Feedback",
-      date: new Date(),
+      date: new Date().toISOString(),
       status: 'upload',
       references: {
         videos: [],
@@ -76,6 +90,11 @@ export default function DashboardPage() {
     setCurrentFeedback(newFeedback)
   }
 
+  // Initialize current feedback with the first item
+  useEffect(() => {
+    setCurrentFeedback(feedbacks[0])
+  }, []) // Empty dependency array - runs only once on mount
+
   const handleFileUpload = async (data: { threadId: string; runId: string }) => {
     if (!currentFeedback) return
     
@@ -86,9 +105,12 @@ export default function DashboardPage() {
       runId: data.runId
     }
 
-    setFeedbacks(prev => prev.map(f => 
-      f.id === currentFeedback.id ? updatedFeedback : f
-    ))
+    setFeedbacks(prev => {
+      const newFeedbacks = prev.map(f => 
+        f.id === currentFeedback.id ? updatedFeedback : f
+      )
+      return newFeedbacks
+    })
     setCurrentFeedback(updatedFeedback)
   }
 
@@ -96,16 +118,14 @@ export default function DashboardPage() {
     if (!currentFeedback) return
 
     try {
-      console.log('Raw output:', output); // Log the raw output for debugging
-      const feedbackData = JSON.parse(output.trim()); // Trim any whitespace
+      const feedbackData = JSON.parse(output.trim());
       
-      // Find relevant references based on feedback
       const relevantRefs = findRelevantReferences(feedbackData.areas, feedbackData.summary);
       
       const updatedFeedback: FeedbackItem = {
         ...currentFeedback,
         status: 'ready',
-        title: "Your Portfolio Analysis",
+        title:  feedbackData.title || "Your Portfolio Analysis",
         summary: feedbackData.summary,
         areas: feedbackData.areas,
         references: {
@@ -115,12 +135,15 @@ export default function DashboardPage() {
           podcasts: relevantRefs.podcasts,
           videos: relevantRefs.videos
         },
-        imageUrl: generatePatternUrl(Date.now()) // Use current timestamp as seed
+        imageUrl: generatePatternUrl(Date.now())
       }
 
-      setFeedbacks(prev => prev.map(feedback => 
-        feedback.id === currentFeedback.id ? updatedFeedback : feedback
-      ))
+      setFeedbacks(prev => {
+        const newFeedbacks = prev.map(feedback => 
+          feedback.id === currentFeedback.id ? updatedFeedback : feedback
+        )
+        return newFeedbacks
+      })
 
       setCurrentFeedback(updatedFeedback)
     } catch (error) {
@@ -133,9 +156,12 @@ export default function DashboardPage() {
         title: "New Feedback"
       }
 
-      setFeedbacks(prev => prev.map(feedback => 
-        feedback.id === currentFeedback.id ? updatedFeedback : feedback
-      ))
+      setFeedbacks(prev => {
+        const newFeedbacks = prev.map(feedback => 
+          feedback.id === currentFeedback.id ? updatedFeedback : feedback
+        )
+        return newFeedbacks
+      })
 
       setCurrentFeedback(updatedFeedback)
     }
@@ -149,9 +175,12 @@ export default function DashboardPage() {
       status: 'viewed'
     }
 
-    setFeedbacks(prev => prev.map(feedback => 
-      feedback.id === currentFeedback.id ? updatedFeedback : feedback
-    ))
+    setFeedbacks(prev => {
+      const newFeedbacks = prev.map(feedback => 
+        feedback.id === currentFeedback.id ? updatedFeedback : feedback
+      )
+      return newFeedbacks
+    })
     setCurrentFeedback(updatedFeedback)
   }
 
@@ -162,12 +191,13 @@ export default function DashboardPage() {
   const handleDeleteFeedback = (feedbackId: string, e: React.MouseEvent) => {
     e.stopPropagation()
     
-    const updatedFeedbacks = feedbacks.filter(f => f.id !== feedbackId)
-    const isCurrentFeedback = currentFeedback?.id === feedbackId
-
-    setFeedbacks(updatedFeedbacks)
+    setFeedbacks(prev => {
+      const newFeedbacks = prev.filter(f => f.id !== feedbackId)
+      return newFeedbacks
+    })
     
-    if (isCurrentFeedback) {
+    if (currentFeedback?.id === feedbackId) {
+      const updatedFeedbacks = feedbacks.filter(f => f.id !== feedbackId)
       if (updatedFeedbacks.length > 0) {
         setCurrentFeedback(updatedFeedbacks[0])
       } else {
@@ -175,13 +205,6 @@ export default function DashboardPage() {
       }
     }
   }
-
-  // Initialize with a pending feedback if there are no feedbacks
-  useEffect(() => {
-    if (feedbacks.length === 0) {
-      createNewFeedback()
-    }
-  }, []) // Empty dependency array - runs only once on mount
 
   return (
     <DashboardLayout

@@ -14,7 +14,6 @@ export function usePollingStatus(threadId: string, runId: string) {
   const [output, setOutput] = useState<string>("")
 
   useEffect(() => {
-    console.log("usePollingStatus hook initialized with:", { threadId, runId })
     
     if (!threadId || !runId) {
       console.warn("Missing threadId or runId")
@@ -25,7 +24,6 @@ export function usePollingStatus(threadId: string, runId: string) {
 
     const pollStatus = async () => {
       try {
-        console.log("Polling status for:", { threadId, runId })
         const response = await fetch(`/api/check-status?threadId=${threadId}&runId=${runId}`)
         
         if (!response.ok) {
@@ -33,7 +31,6 @@ export function usePollingStatus(threadId: string, runId: string) {
         }
         
         const data: PollingResponse = await response.json()
-        console.log("Received polling response:", data)
 
         if (!isActive) return
 

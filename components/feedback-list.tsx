@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { formatDistanceToNow } from "date-fns"
 import { Trash2 } from "lucide-react"
 import { FeedbackItem } from "@/app/dashboard/page"
 
@@ -49,28 +48,28 @@ export function FeedbackList({
             >
               <Button
                 variant="ghost"
-                className="w-full justify-start text-sm h-auto py-3 px-4"
+                className="w-full text-left text-sm h-auto py-3 px-4 relative"
                 onClick={() => onSelect(feedback)}
               >
-                <div className="flex flex-col items-start w-full min-w-0">
-                  <span className="font-medium truncate w-[85%]">
-                    {isUploadItem ? 'New Feedback...' : feedback.title}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground mt-0.5">
-                    {formatDistanceToNow(feedback.date, { addSuffix: true })}
-                  </span>
+                <div className="flex items-center w-full max-w-[250px] pr-1">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <span className="font-medium block truncate">
+                      {isUploadItem ? 'New Feedback...' : feedback.title}
+                    </span>
+                  </div>
+                  {showDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => onDelete(feedback.id, e)}
+                      aria-label={`Delete feedback "${feedback.title}"`}
+                    >
+                      <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive transition-colors" />
+                    </Button>
+                  )}
                 </div>
               </Button>
-              {showDelete && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={(e) => onDelete(feedback.id, e)}
-                >
-                  <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive transition-colors" />
-                </Button>
-              )}
             </div>
           )
         })}
