@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from "openai";
 import * as cheerio from 'cheerio';
 import { ProcessingCache } from '@/lib/cache';
+import { createHash } from 'crypto';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -154,6 +155,7 @@ interface ThreadAndRunResult {
 async function handlePdfUpload(req: NextRequest) {
   const formData = await req.formData();
   const file = formData.get('file') as File;
+  const forceNewProcessing = formData.get('forceNewProcessing') === 'true';
 
   if (!file) {
     return NextResponse.json({ error: 'No file uploaded.' }, { status: 400 });
@@ -174,24 +176,27 @@ async function handlePdfUpload(req: NextRequest) {
   try {
     console.log('Processing PDF upload for file:', file.name);
     
-    // Create a unique identifier for the file
-    const fileIdentifier = `file:${Buffer.from(await file.arrayBuffer()).toString('base64')}`;
+    // Create a hash of the file content for cache key
+    const fileHash = createHash('sha256').update(buffer).digest('hex');
+    const fileIdentifier = `file:${fileHash}`;
     console.log('Generated file identifier:', fileIdentifier);
 
-    // Check cache first
-    const cached = ProcessingCache.get(fileIdentifier);
-    console.log('Cache check result:', cached);
-    
-    if (cached) {
-      console.log('Using cached result for file:', file.name);
-      return NextResponse.json({
-        thread_id: cached.threadId,
-        run_id: cached.runId,
-        cached: true
-      });
+    // Check cache first, unless forceNewProcessing is true
+    if (!forceNewProcessing) {
+      const cached = ProcessingCache.get(fileIdentifier);
+      console.log('Cache check result:', cached);
+      
+      if (cached) {
+        console.log('Using cached result for file:', file.name);
+        return NextResponse.json({
+          thread_id: cached.threadId,
+          run_id: cached.runId,
+          cached: true
+        });
+      }
     }
 
-    console.log('No cache found, processing file:', file.name);
+    console.log('No cache found or forceNewProcessing is true, processing file:', file.name);
     
     // Upload file to OpenAI
     console.log('Uploading file to OpenAI');
@@ -237,7 +242,7 @@ async function handlePdfUpload(req: NextRequest) {
 
 // 🟢 2. Análise de link (via JSON)
 async function handleLinkSubmission(req: NextRequest) {
-  const { url } = await req.json();
+  const { url, forceNewProcessing } = await req.json();
 
   if (!url) {
     return NextResponse.json({ error: 'Missing URL.' }, { status: 400 });
@@ -246,20 +251,22 @@ async function handleLinkSubmission(req: NextRequest) {
   try {
     console.log('Processing link submission for URL:', url);
     
-    // Check cache first
-    const cached = ProcessingCache.get(url);
-    console.log('Cache check result:', cached);
-    
-    if (cached) {
-      console.log('Using cached result for URL:', url);
-      return NextResponse.json({
-        thread_id: cached.threadId,
-        run_id: cached.runId,
-        cached: true
-      });
+    // Check cache first, unless forceNewProcessing is true
+    if (!forceNewProcessing) {
+      const cached = ProcessingCache.get(url);
+      console.log('Cache check result:', cached);
+      
+      if (cached) {
+        console.log('Using cached result for URL:', url);
+        return NextResponse.json({
+          thread_id: cached.threadId,
+          run_id: cached.runId,
+          cached: true
+        });
+      }
     }
 
-    console.log('No cache found, processing URL:', url);
+    console.log('No cache found or forceNewProcessing is true, processing URL:', url);
     
     // If not in cache, process normally
     const text = await crawlPortfolio(url);

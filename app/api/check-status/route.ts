@@ -74,19 +74,38 @@ export async function GET(request: Request) {
       
       if (lastMessage?.content[0]?.type === "text") {
         output = lastMessage.content[0].text.value.trim()
+        console.log("Raw output:", output)
         
         // Validate if the output is valid JSON
         try {
-          JSON.parse(output)
+          const parsed = JSON.parse(output)
+          console.log("Parsed JSON successfully:", parsed)
         } catch (error) {
           console.error("Invalid JSON in assistant response:", error)
+          console.error("Error position:", error instanceof SyntaxError ? error.message : "Unknown position")
+          console.error("JSON length:", output.length)
+          
+          // Try to find the approximate position of the error
+          if (error instanceof SyntaxError) {
+            const position = parseInt(error.message.match(/position (\d+)/)?.[1] || "0")
+            const context = 50 // characters to show before and after
+            const start = Math.max(0, position - context)
+            const end = Math.min(output.length, position + context)
+            console.error("Error context:", output.slice(start, end))
+          }
+          
+          // Don't store invalid responses in cache
           return NextResponse.json(
-            { error: "Invalid response format from assistant" },
+            { 
+              status: "failed",
+              error: "The AI response was invalid. Please try again.",
+              details: "The feedback could not be properly formatted. This might be due to an unexpected response from the AI."
+            },
             { status: 500 }
           )
         }
 
-        // If we have an identifier and the run is completed, update the cache
+        // Only store in cache if we have valid JSON
         if (identifier) {
           console.log('Storing completed result in cache for:', identifier)
           ProcessingCache.set(identifier, {

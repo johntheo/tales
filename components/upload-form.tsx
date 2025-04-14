@@ -25,6 +25,7 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [forceNewProcessing, setForceNewProcessing] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -107,11 +108,15 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ url: formattedLink }),
+          body: JSON.stringify({ 
+            url: formattedLink,
+            forceNewProcessing 
+          }),
         });
       } else if (file) {
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('forceNewProcessing', forceNewProcessing.toString());
         
         response = await fetch('/api/generate-feedback', {
           method: 'POST',
@@ -243,6 +248,22 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="force-new-processing"
+            checked={forceNewProcessing}
+            onChange={(e) => setForceNewProcessing(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+          />
+          <label
+            htmlFor="force-new-processing"
+            className="text-sm text-gray-600"
+          >
+            Force new processing (ignore cache)
+          </label>
+        </div>
 
         <Button
           type="submit"

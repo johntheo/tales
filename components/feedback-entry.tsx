@@ -132,7 +132,7 @@ export function FeedbackEntry({
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Your latest feedback is here!</h1>
         <p className="text-base text-muted-foreground">
-          We've reviewed your submission. Here's an overview of your presentation's performance and key areas for improvement.
+          We've reviewed your submission. Here's an overall feedback and key areas for improvement.
         </p>
       </div>
 
