@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -13,6 +13,7 @@ import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Responsi
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { FeedbackPDF } from './feedback-pdf';
 import { toast } from 'sonner';
+import { trackEvent } from "@/lib/posthog"
 
 export interface Areas {
   clarity: {
@@ -69,6 +70,54 @@ export function FeedbackEntry({
   isLoaded
 }: FeedbackEntryProps) {
   const [selectedArea, setSelectedArea] = useState<keyof Areas>("clarity")
+
+  // Track when feedback is first viewed
+  useEffect(() => {
+    if (isLoaded) {
+      trackEvent('feature_used', {
+        feature_name: 'feedback_view',
+        action: 'initial_view'
+      })
+    }
+  }, [isLoaded])
+
+  // Track area selection changes
+  useEffect(() => {
+    if (selectedArea) {
+      trackEvent('feature_used', {
+        feature_name: 'feedback_navigation',
+        action: `selected_area_${selectedArea}`
+      })
+    }
+  }, [selectedArea])
+
+  // Track reference interactions
+  const handleReferenceClick = (type: string, title: string) => {
+    trackEvent('feature_used', {
+      feature_name: 'reference_interaction',
+      action: `clicked_${type}`,
+      reference_title: title,
+      cta_type: 'link'
+    })
+  }
+
+  // Track PDF download
+  const handlePDFDownload = () => {
+    trackEvent('feature_used', {
+      feature_name: 'feedback_export',
+      action: 'downloaded_pdf',
+      cta_type: 'button'
+    })
+  }
+
+  // Track professional consultation request
+  const handleConsultationRequest = () => {
+    trackEvent('feature_used', {
+      feature_name: 'feedback_action',
+      action: 'requested_consultation',
+      cta_type: 'button'
+    })
+  }
 
   const areaConfig: Record<keyof Areas, { name: string; icon: React.ReactNode; color: string }> = {
     clarity: { 
@@ -168,12 +217,7 @@ export function FeedbackEntry({
                   }
                   fileName={`${fileName}-feedback.pdf`}
                   className="w-full md:w-1/2"
-                  onClick={() => {
-                    toast.success('Generating PDF...', {
-                      description: 'Your feedback report is being prepared.',
-                      duration: 3000,
-                    });
-                  }}
+                  onClick={handlePDFDownload}
                   onError={(event) => {
                     console.error('PDF generation error:', event);
                     toast.error('Failed to generate PDF', {
@@ -195,6 +239,7 @@ export function FeedbackEntry({
                 <a 
                   href={`mailto:detales.app@gmail.com?subject=Mentoring Request - ${fileName}&body=Hi there,%0D%0A%0D%0AI've just received feedback on my presentation "${fileName}" and I'm interested in scheduling a mentoring session to discuss it further and get professional guidance.%0D%0A%0D%0ALooking forward to hearing from you!%0D%0A%0D%0ABest regards`}
                   className="w-full md:w-1/2"
+                  onClick={handleConsultationRequest}
                 >
                   <Button className="w-full justify-center">
                     Talk to a professional
@@ -374,6 +419,7 @@ export function FeedbackEntry({
                         variant="link"
                         className="p-0 h-auto text-primary"
                         asChild
+                        onClick={() => handleReferenceClick(type, ref.title)}
                       >
                         <a
                           href={ref.link}

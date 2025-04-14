@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 
 import { useState, useRef } from "react"
 import Link from "next/link"
@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { trackEvent } from "@/lib/posthog"
 
 export default function AppPage() {
   const router = useRouter()
@@ -25,6 +26,10 @@ export default function AppPage() {
 
   const handleOptionSelect = (option: string) => {
     setSelectedOption(option)
+    trackEvent('feature_used', {
+      feature_name: 'portfolio_type_selection',
+      action: `selected_${option}`
+    })
   }
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -41,24 +46,48 @@ export default function AppPage() {
     setIsDragging(false)
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      setFile(e.dataTransfer.files[0])
+      const file = e.dataTransfer.files[0]
+      setFile(file)
+      trackEvent('portfolio_upload_started', {
+        type: 'file',
+        file_type: file.type,
+        file_size: file.size
+      })
     }
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0])
+      const file = e.target.files[0]
+      setFile(file)
+      trackEvent('portfolio_upload_started', {
+        type: 'file',
+        file_type: file.type,
+        file_size: file.size
+      })
     }
   }
 
   const handleBrowseClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click()
+      trackEvent('feature_used', {
+        feature_name: 'home_cta',
+        action: 'clicked_browse_files',
+        cta_type: 'button'
+      })
     }
   }
 
   const handleSubmit = () => {
     setIsSubmitting(true)
+
+    // Track portfolio submission
+    if (portfolioLink) {
+      trackEvent('portfolio_upload_started', {
+        type: 'link'
+      })
+    }
 
     // Store the portfolio data in session storage
     const portfolioData = portfolioLink || (file ? file.name : "Sample portfolio")
@@ -70,6 +99,11 @@ export default function AppPage() {
       reader.onload = (e) => {
         if (e.target && e.target.result) {
           sessionStorage.setItem("portfolioImage", e.target.result.toString())
+          trackEvent('portfolio_upload_completed', {
+            type: 'file',
+            file_type: file.type,
+            file_size: file.size
+          })
         }
         // Navigate directly to dashboard
         router.push("/dashboard")
@@ -81,6 +115,11 @@ export default function AppPage() {
         "portfolioImage",
         "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BODWPsrnGqynDDYQo7WAnZjkWgbxty.png",
       )
+      if (portfolioLink) {
+        trackEvent('portfolio_upload_completed', {
+          type: 'link'
+        })
+      }
       // Navigate directly to dashboard
       router.push("/dashboard")
     }
@@ -89,7 +128,20 @@ export default function AppPage() {
   const scrollToFeatures = () => {
     featuresRef.current?.scrollIntoView({ behavior: "smooth" })
     setMobileMenuOpen(false)
+    trackEvent('feature_used', {
+      feature_name: 'home_cta',
+      action: 'clicked_solution',
+      cta_type: 'button'
+    })
   }
+
+  // Track page view on component mount
+  React.useEffect(() => {
+    trackEvent('page_view', {
+      page_name: 'home',
+      referrer: document.referrer
+    })
+  }, [])
 
   return (
     <>
@@ -109,7 +161,18 @@ export default function AppPage() {
           </Button>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/dashboard">
-              <Button variant="default" size="lg" className="bg-black text-white hover:bg-gray-800 min-w-[200px]">
+              <Button 
+                variant="default" 
+                size="lg" 
+                className="bg-black text-white hover:bg-gray-800 min-w-[200px]"
+                onClick={() => {
+                  trackEvent('feature_used', {
+                    feature_name: 'home_cta',
+                    action: 'clicked_get_started',
+                    cta_type: 'button'
+                  })
+                }}
+              >
                 Get Started Free
               </Button>
             </Link>
@@ -258,7 +321,7 @@ export default function AppPage() {
                     <path d="M20 21H4" stroke="black" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                   <p className="text-gray-500 text-xs">{file ? file.name : "Choose a file or drag & drop it here"}</p>
-                  <Button variant="outline" size="sm" className="rounded-md h-8 text-xs">
+                  <Button variant="outline" size="sm" className="rounded-md h-8 text-xs" onClick={handleBrowseClick}>
                     Browse Files
                   </Button>
                 </div>
@@ -267,7 +330,14 @@ export default function AppPage() {
               {/* Submit Button */}
               <Button
                 className="w-full bg-black hover:bg-black/90 text-white h-10 rounded-md text-sm"
-                onClick={handleSubmit}
+                onClick={() => {
+                  handleSubmit()
+                  trackEvent('feature_used', {
+                    feature_name: 'home_cta',
+                    action: 'clicked_submit_review',
+                    cta_type: 'button'
+                  })
+                }}
                 disabled={(!portfolioLink && !file) || isSubmitting}
               >
                 {isSubmitting ? "Processing..." : "Submit for Review"}

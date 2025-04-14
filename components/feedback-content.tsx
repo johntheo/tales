@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react"
 import { usePollingStatus } from "@/hooks/usePollingStatus"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Reference } from "@/components/feedback-entry"
+import { trackEvent } from "@/lib/posthog"
 
 export interface FeedbackData {
   id: string
@@ -80,11 +81,30 @@ export function FeedbackContent({
     if (!feedback.threadId || !feedback.runId) return;
     
     if (feedback.status === 'processing' && (status === "failed" || status === "cancelled" || status === "expired")) {
+      trackEvent('error_occurred', {
+        error_type: 'processing_error',
+        error_message: `Processing failed with status: ${status}`,
+        page: 'feedback_content'
+      })
       onComplete("An error occurred while processing your feedback. Please try again.")
     } else if (feedback.status === 'processing' && status === "completed" && output) {
+      trackEvent('feature_used', {
+        feature_name: 'feedback_processing',
+        action: 'completed_successfully'
+      })
       onComplete(output)
     }
   }, [status, output, onComplete, feedback.status, feedback.threadId, feedback.runId])
+
+  // Track when feedback is ready to be viewed
+  useEffect(() => {
+    if (feedback.status === 'ready') {
+      trackEvent('feature_used', {
+        feature_name: 'feedback_status',
+        action: 'ready_to_view'
+      })
+    }
+  }, [feedback.status])
 
   const getStatusMessage = (status: string) => {
     switch (status) {

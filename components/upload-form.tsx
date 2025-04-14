@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LoadingScreen } from "@/components/loading-screen"
 import { toast } from "sonner"
+import { trackEvent } from "@/lib/posthog"
 
 interface UploadFormProps {
   onSubmit: (data: { threadId: string; runId: string }) => void
@@ -49,15 +50,28 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
           setFile(droppedFile)
           setLink("")
           setError(null)
+          trackEvent('portfolio_upload_started', {
+            type: 'file',
+            file_type: droppedFile.type,
+            file_size: droppedFile.size
+          })
         } else {
           const errorMsg = "File size exceeds 10MB limit"
           setError(errorMsg)
           toast.error(errorMsg)
+          trackEvent('portfolio_upload_failed', {
+            type: 'file',
+            error: errorMsg
+          })
         }
       } else {
         const errorMsg = "Please upload a PDF file"
         setError(errorMsg)
         toast.error(errorMsg)
+        trackEvent('portfolio_upload_failed', {
+          type: 'file',
+          error: errorMsg
+        })
       }
     }
   }
@@ -70,15 +84,28 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
           setFile(selectedFile)
           setLink("")
           setError(null)
+          trackEvent('portfolio_upload_started', {
+            type: 'file',
+            file_type: selectedFile.type,
+            file_size: selectedFile.size
+          })
         } else {
           const errorMsg = "File size exceeds 10MB limit"
           setError(errorMsg)
           toast.error(errorMsg)
+          trackEvent('portfolio_upload_failed', {
+            type: 'file',
+            error: errorMsg
+          })
         }
       } else {
         const errorMsg = "Please upload a PDF file"
         setError(errorMsg)
         toast.error(errorMsg)
+        trackEvent('portfolio_upload_failed', {
+          type: 'file',
+          error: errorMsg
+        })
       }
     }
   }
@@ -102,6 +129,10 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
         const formattedLink = link.startsWith('http://') || link.startsWith('https://')
           ? link
           : `https://${link}`
+        
+        trackEvent('portfolio_upload_started', {
+          type: 'link'
+        })
         
         response = await fetch('/api/generate-feedback', {
           method: 'POST',
@@ -129,10 +160,19 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
         const errorMsg = errorData?.error || 'Failed to submit for analysis'
         setError(errorMsg);
         toast.error(errorMsg);
+        trackEvent('portfolio_upload_failed', {
+          type: file ? 'file' : 'link',
+          error: errorMsg
+        });
         throw new Error(errorMsg);
       }
 
       const data = await response.json();
+      trackEvent('portfolio_upload_completed', {
+        type: file ? 'file' : 'link',
+        file_type: file?.type,
+        file_size: file?.size
+      });
       onSubmit({
         threadId: data.thread_id,
         runId: data.run_id
@@ -142,6 +182,11 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
       const errorMsg = error instanceof Error ? error.message : 'An unexpected error occurred'
       setError(errorMsg);
       toast.error(errorMsg);
+      trackEvent('error_occurred', {
+        error_type: 'upload_error',
+        error_message: errorMsg,
+        page: 'upload_form'
+      });
       setIsProcessing(false);
     }
   }

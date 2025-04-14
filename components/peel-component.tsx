@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
+import { trackEvent } from "@/lib/posthog"
 
 interface PeelCardProps {
   onReveal: () => void
@@ -75,6 +76,10 @@ export default function PeelCard({ onReveal, gradient, name, role, width, height
   const handleStart = useCallback((clientX: number) => {
     setIsPeeling(true)
     updatePeelProgress(clientX)
+    trackEvent('feature_used', {
+      feature_name: 'peel_interaction',
+      action: 'started_peeling'
+    })
   }, [updatePeelProgress])
 
   const handleMove = useCallback((clientX: number) => {
@@ -119,9 +124,17 @@ export default function PeelCard({ onReveal, gradient, name, role, width, height
       setIsPeeling(false)
       if (peelProgress > 95) {
         triggerConfetti()
+        trackEvent('feature_used', {
+          feature_name: 'peel_interaction',
+          action: 'completed_peeling'
+        })
         onReveal()
       } else {
         setPeelProgress(0)
+        trackEvent('feature_used', {
+          feature_name: 'peel_interaction',
+          action: 'cancelled_peeling'
+        })
       }
     }
   }, [isPeeling, peelProgress, onReveal])

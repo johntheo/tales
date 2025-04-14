@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Trash2 } from "lucide-react"
 import { FeedbackItem } from "@/app/dashboard/page"
+import { trackEvent } from "@/lib/posthog"
 
 interface FeedbackListProps {
   items: FeedbackItem[]
@@ -32,6 +33,28 @@ export function FeedbackList({
     }
   }
 
+  const handleSelect = (feedback: FeedbackItem) => {
+    trackEvent('feature_used', {
+      feature_name: 'feedback_list',
+      action: 'selected_feedback',
+      feedback_id: feedback.id,
+      feedback_status: feedback.status,
+      cta_type: 'button'
+    })
+    onSelect(feedback)
+  }
+
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    trackEvent('feature_used', {
+      feature_name: 'feedback_list',
+      action: 'deleted_feedback',
+      feedback_id: id,
+      cta_type: 'button'
+    })
+    onDelete(id, e)
+  }
+
   return (
     <ScrollArea className="h-full">
       <div className="space-y-0.5">
@@ -49,7 +72,7 @@ export function FeedbackList({
               <Button
                 variant="ghost"
                 className="w-full text-left text-sm h-auto py-3 px-4 relative"
-                onClick={() => onSelect(feedback)}
+                onClick={() => handleSelect(feedback)}
               >
                 <div className="flex items-center w-full max-w-[250px] pr-1">
                   <div className="flex-1 min-w-0 pr-2">
@@ -62,7 +85,7 @@ export function FeedbackList({
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => onDelete(feedback.id, e)}
+                      onClick={(e) => handleDelete(feedback.id, e)}
                       aria-label={`Delete feedback "${feedback.title}"`}
                     >
                       <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive transition-colors" />

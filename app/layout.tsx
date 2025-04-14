@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from 'sonner'
+import { PostHogProvider } from './providers'
 
 const inter = Inter({ subsets: ["latin"], display: "swap" })
 
@@ -20,15 +21,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} font-sans`} suppressHydrationWarning>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="flex flex-col min-h-screen">{children}</div>
-        </ThemeProvider>
-        <Toaster richColors position="top-right" />
+        <PostHogProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="flex flex-col min-h-screen">{children}</div>
+          </ThemeProvider>
+          <Toaster richColors position="bottom-right" />
+        </PostHogProvider>
       </body>
     </html>
   )
