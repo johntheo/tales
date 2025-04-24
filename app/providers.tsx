@@ -9,13 +9,13 @@ import { PostHogProvider as PHProvider } from 'posthog-js/react'
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // Only initialize PostHog in production
-    if (!window.location.host.includes('localhost') && !window.location.host.includes('127.0.0.1')) {
+    try {
+      // Initialize PostHog in both development and production
       posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY as string, {
         api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
         person_profiles: 'identified_only',
         capture_pageview: true,
-        debug: process.env.NODE_ENV === 'development',
+        debug: true, // Enable debug mode to see logs
         persistence: 'localStorage',
         autocapture: true,
         capture_pageleave: true,
@@ -43,6 +43,9 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
           },
         },
       })
+      console.log('PostHog initialized successfully')
+    } catch (error) {
+      console.error('Failed to initialize PostHog:', error)
     }
   }, [])
 
