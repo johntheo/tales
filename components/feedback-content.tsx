@@ -88,9 +88,10 @@ export function FeedbackContent({
       })
       onComplete("An error occurred while processing your feedback. Please try again.")
     } else if (feedback.status === 'processing' && status === "completed" && output) {
-      trackEvent('feature_used', {
-        feature_name: 'feedback_processing',
-        action: 'completed_successfully'
+      trackEvent('feedback_generation_completed', {
+        content_type: 'portfolio', // This should be dynamic based on actual type
+        generation_time: 0, // This should be calculated based on actual time
+        feedback_quality_score: undefined
       })
       onComplete(output)
     }
@@ -99,9 +100,10 @@ export function FeedbackContent({
   // Track when feedback is ready to be viewed
   useEffect(() => {
     if (feedback.status === 'ready') {
-      trackEvent('feature_used', {
-        feature_name: 'feedback_status',
-        action: 'ready_to_view'
+      trackEvent('feedback_generation_completed', {
+        content_type: 'portfolio', // This should be dynamic based on actual type
+        generation_time: 0, // This should be calculated based on actual time
+        feedback_quality_score: undefined
       })
     }
   }, [feedback.status])

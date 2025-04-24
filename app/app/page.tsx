@@ -12,9 +12,11 @@ import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { trackEvent } from "@/lib/posthog"
 
+type ContentType = 'portfolio' | 'presentation' | 'case_study'
+
 export default function AppPage() {
   const router = useRouter()
-  const [selectedOption, setSelectedOption] = useState("portfolio")
+  const [selectedOption, setSelectedOption] = useState<ContentType>("portfolio")
   const [portfolioLink, setPortfolioLink] = useState("")
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -24,11 +26,12 @@ export default function AppPage() {
   const [trustModalOpen, setTrustModalOpen] = useState(false)
   const featuresRef = useRef<HTMLDivElement>(null)
 
-  const handleOptionSelect = (option: string) => {
+  const handleOptionSelect = (option: ContentType) => {
     setSelectedOption(option)
     trackEvent('feature_used', {
-      feature_name: 'portfolio_type_selection',
-      action: `selected_${option}`
+      feature_name: 'content_type_selection',
+      action: `selected_${option}`,
+      cta_type: 'button'
     })
   }
 
@@ -48,8 +51,8 @@ export default function AppPage() {
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0]
       setFile(file)
-      trackEvent('portfolio_upload_started', {
-        type: 'file',
+      trackEvent('feedback_generation_started', {
+        content_type: selectedOption,
         file_type: file.type,
         file_size: file.size
       })
@@ -60,8 +63,8 @@ export default function AppPage() {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0]
       setFile(file)
-      trackEvent('portfolio_upload_started', {
-        type: 'file',
+      trackEvent('feedback_generation_started', {
+        content_type: selectedOption,
         file_type: file.type,
         file_size: file.size
       })
@@ -72,7 +75,7 @@ export default function AppPage() {
     if (fileInputRef.current) {
       fileInputRef.current.click()
       trackEvent('feature_used', {
-        feature_name: 'home_cta',
+        feature_name: 'file_upload',
         action: 'clicked_browse_files',
         cta_type: 'button'
       })
@@ -84,8 +87,8 @@ export default function AppPage() {
 
     // Track portfolio submission
     if (portfolioLink) {
-      trackEvent('portfolio_upload_started', {
-        type: 'link'
+      trackEvent('feedback_generation_started', {
+        content_type: selectedOption
       })
     }
 
@@ -99,10 +102,10 @@ export default function AppPage() {
       reader.onload = (e) => {
         if (e.target && e.target.result) {
           sessionStorage.setItem("portfolioImage", e.target.result.toString())
-          trackEvent('portfolio_upload_completed', {
-            type: 'file',
-            file_type: file.type,
-            file_size: file.size
+          trackEvent('feedback_generation_completed', {
+            content_type: selectedOption,
+            generation_time: 0, // This should be calculated based on actual time
+            feedback_quality_score: undefined
           })
         }
         // Navigate directly to dashboard
@@ -116,8 +119,10 @@ export default function AppPage() {
         "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BODWPsrnGqynDDYQo7WAnZjkWgbxty.png",
       )
       if (portfolioLink) {
-        trackEvent('portfolio_upload_completed', {
-          type: 'link'
+        trackEvent('feedback_generation_completed', {
+          content_type: selectedOption,
+          generation_time: 0, // This should be calculated based on actual time
+          feedback_quality_score: undefined
         })
       }
       // Navigate directly to dashboard
@@ -129,8 +134,8 @@ export default function AppPage() {
     featuresRef.current?.scrollIntoView({ behavior: "smooth" })
     setMobileMenuOpen(false)
     trackEvent('feature_used', {
-      feature_name: 'home_cta',
-      action: 'clicked_solution',
+      feature_name: 'navigation',
+      action: 'scrolled_to_features',
       cta_type: 'button'
     })
   }
@@ -167,7 +172,7 @@ export default function AppPage() {
                 className="bg-black text-white hover:bg-gray-800 min-w-[200px]"
                 onClick={() => {
                   trackEvent('feature_used', {
-                    feature_name: 'home_cta',
+                    feature_name: 'navigation',
                     action: 'clicked_get_started',
                     cta_type: 'button'
                   })
@@ -225,10 +230,10 @@ export default function AppPage() {
                 </button>
 
                 <button
-                  onClick={() => handleOptionSelect("case")}
+                  onClick={() => handleOptionSelect("case_study")}
                   className={cn(
                     "flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors",
-                    selectedOption === "case" && "border-black border-2",
+                    selectedOption === "case_study" && "border-black border-2",
                   )}
                 >
                   <div className="w-6 h-6 mb-2 flex items-center justify-center">
@@ -247,10 +252,10 @@ export default function AppPage() {
                 </button>
 
                 <button
-                  onClick={() => handleOptionSelect("pitch")}
+                  onClick={() => handleOptionSelect("presentation")}
                   className={cn(
                     "flex flex-col items-center justify-center p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors",
-                    selectedOption === "pitch" && "border-black border-2",
+                    selectedOption === "presentation" && "border-black border-2",
                   )}
                 >
                   <div className="w-6 h-6 mb-2 flex items-center justify-center">
@@ -276,7 +281,7 @@ export default function AppPage() {
                 <Input
                   id="link"
                   type="url"
-                  placeholder={`${selectedOption === "portfolio" ? "Portfolio" : selectedOption === "case" ? "Case Study" : "Pitch Deck"} Link`}
+                  placeholder={`${selectedOption === "portfolio" ? "Portfolio" : selectedOption === "case_study" ? "Case Study" : selectedOption === "presentation" ? "Presentation Deck" : "Pitch Deck"} Link`}
                   value={portfolioLink}
                   onChange={(e) => setPortfolioLink(e.target.value)}
                   className="w-full"

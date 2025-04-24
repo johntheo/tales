@@ -3,6 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation"
 import { useEffect, Suspense } from "react"
 import { usePostHog } from 'posthog-js/react'
+import { trackEvent } from '@/lib/posthog'
 
 import posthog from 'posthog-js'
 import { PostHogProvider as PHProvider } from 'posthog-js/react'
@@ -85,13 +86,9 @@ function PostHogPageView() {
           url = url + "?" + searchParams.toString();
         }
 
-        posthog.capture('$pageview', { 
-          '$current_url': url,
-          '$host': window.location.host,
-          '$pathname': pathname,
-          '$search': searchParams.toString(),
-          '$referrer': document.referrer,
-          '$title': document.title,
+        trackEvent('page_view', {
+          page_name: pathname,
+          referrer: document.referrer
         })
       } catch (error) {
         console.warn('Failed to track pageview:', error)

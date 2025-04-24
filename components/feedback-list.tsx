@@ -34,23 +34,19 @@ export function FeedbackList({
   }
 
   const handleSelect = (feedback: FeedbackItem) => {
-    trackEvent('feature_used', {
-      feature_name: 'feedback_list',
-      action: 'selected_feedback',
+    trackEvent('feedback_list_interaction', {
+      action: 'select',
       feedback_id: feedback.id,
-      feedback_status: feedback.status,
-      cta_type: 'button'
+      filter_criteria: feedback.status
     })
     onSelect(feedback)
   }
 
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    trackEvent('feature_used', {
-      feature_name: 'feedback_list',
-      action: 'deleted_feedback',
-      feedback_id: id,
-      cta_type: 'button'
+    trackEvent('feedback_list_interaction', {
+      action: 'delete',
+      feedback_id: id
     })
     onDelete(id, e)
   }

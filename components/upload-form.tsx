@@ -50,8 +50,8 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
           setFile(droppedFile)
           setLink("")
           setError(null)
-          trackEvent('portfolio_upload_started', {
-            type: 'file',
+          trackEvent('feedback_generation_started', {
+            content_type: 'portfolio', // This should be dynamic based on actual type
             file_type: droppedFile.type,
             file_size: droppedFile.size
           })
@@ -59,18 +59,20 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
           const errorMsg = "File size exceeds 10MB limit"
           setError(errorMsg)
           toast.error(errorMsg)
-          trackEvent('portfolio_upload_failed', {
-            type: 'file',
-            error: errorMsg
+          trackEvent('feedback_generation_failed', {
+            content_type: 'portfolio', // This should be dynamic based on actual type
+            error_type: 'file_size_exceeded',
+            error_message: errorMsg
           })
         }
       } else {
         const errorMsg = "Please upload a PDF file"
         setError(errorMsg)
         toast.error(errorMsg)
-        trackEvent('portfolio_upload_failed', {
-          type: 'file',
-          error: errorMsg
+        trackEvent('feedback_generation_failed', {
+          content_type: 'portfolio', // This should be dynamic based on actual type
+          error_type: 'invalid_file_type',
+          error_message: errorMsg
         })
       }
     }
@@ -84,8 +86,8 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
           setFile(selectedFile)
           setLink("")
           setError(null)
-          trackEvent('portfolio_upload_started', {
-            type: 'file',
+          trackEvent('feedback_generation_started', {
+            content_type: 'portfolio', // This should be dynamic based on actual type
             file_type: selectedFile.type,
             file_size: selectedFile.size
           })
@@ -93,18 +95,20 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
           const errorMsg = "File size exceeds 10MB limit"
           setError(errorMsg)
           toast.error(errorMsg)
-          trackEvent('portfolio_upload_failed', {
-            type: 'file',
-            error: errorMsg
+          trackEvent('feedback_generation_failed', {
+            content_type: 'portfolio', // This should be dynamic based on actual type
+            error_type: 'file_size_exceeded',
+            error_message: errorMsg
           })
         }
       } else {
         const errorMsg = "Please upload a PDF file"
         setError(errorMsg)
         toast.error(errorMsg)
-        trackEvent('portfolio_upload_failed', {
-          type: 'file',
-          error: errorMsg
+        trackEvent('feedback_generation_failed', {
+          content_type: 'portfolio', // This should be dynamic based on actual type
+          error_type: 'invalid_file_type',
+          error_message: errorMsg
         })
       }
     }
@@ -130,8 +134,8 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
           ? link
           : `https://${link}`
         
-        trackEvent('portfolio_upload_started', {
-          type: 'link'
+        trackEvent('feedback_generation_started', {
+          content_type: 'portfolio', // This should be dynamic based on actual type
         })
         
         response = await fetch('/api/generate-feedback', {
@@ -160,18 +164,19 @@ export function UploadForm({ onSubmit, initialData }: UploadFormProps) {
         const errorMsg = errorData?.error || 'Failed to submit for analysis'
         setError(errorMsg);
         toast.error(errorMsg);
-        trackEvent('portfolio_upload_failed', {
-          type: file ? 'file' : 'link',
-          error: errorMsg
+        trackEvent('feedback_generation_failed', {
+          content_type: 'portfolio', // This should be dynamic based on actual type
+          error_type: 'submission_error',
+          error_message: errorMsg
         });
         throw new Error(errorMsg);
       }
 
       const data = await response.json();
-      trackEvent('portfolio_upload_completed', {
-        type: file ? 'file' : 'link',
-        file_type: file?.type,
-        file_size: file?.size
+      trackEvent('feedback_generation_completed', {
+        content_type: 'portfolio', // This should be dynamic based on actual type
+        generation_time: 0, // This should be calculated based on actual time
+        feedback_quality_score: undefined
       });
       onSubmit({
         threadId: data.thread_id,

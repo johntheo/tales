@@ -70,52 +70,76 @@ export function FeedbackEntry({
   isLoaded
 }: FeedbackEntryProps) {
   const [selectedArea, setSelectedArea] = useState<keyof Areas>("clarity")
+  const [viewedSections, setViewedSections] = useState<Set<string>>(new Set())
+  const [pageLoadTime] = useState(Date.now())
 
   // Track when feedback is first viewed
   useEffect(() => {
     if (isLoaded) {
-      trackEvent('feature_used', {
-        feature_name: 'feedback_view',
-        action: 'initial_view'
+      trackEvent('feedback_viewed', {
+        feedback_id: fileName,
+        feedback_type: 'portfolio', // This should be dynamic based on actual type
+        feedback_status: 'viewed',
+        time_spent: 0
       })
     }
-  }, [isLoaded])
+  }, [isLoaded, fileName])
 
   // Track area selection changes
   useEffect(() => {
     if (selectedArea) {
-      trackEvent('feature_used', {
-        feature_name: 'feedback_navigation',
-        action: `selected_area_${selectedArea}`
+      setViewedSections(prev => new Set([...prev, selectedArea]))
+      
+      trackEvent('feedback_section_expanded', {
+        feedback_id: fileName,
+        section_name: selectedArea,
+        section_type: 'specific_area'
       })
     }
-  }, [selectedArea])
+  }, [selectedArea, fileName])
 
   // Track reference interactions
   const handleReferenceClick = (type: string, title: string) => {
-    trackEvent('feature_used', {
-      feature_name: 'reference_interaction',
-      action: `clicked_${type}`,
-      reference_title: title,
-      cta_type: 'link'
+    trackEvent('feedback_action_taken', {
+      feedback_id: fileName,
+      action_type: 'share',
+      action_success: true,
+      action_context: {
+        button_location: 'feedback_detail',
+        button_style: 'secondary'
+      }
     })
   }
 
   // Track PDF download
   const handlePDFDownload = () => {
-    trackEvent('feature_used', {
-      feature_name: 'feedback_export',
-      action: 'downloaded_pdf',
-      cta_type: 'button'
+    const timeSpent = Math.floor((Date.now() - pageLoadTime) / 1000)
+    
+    trackEvent('feedback_review_interaction', {
+      feedback_id: fileName,
+      interaction_type: 'download_report',
+      interaction_context: {
+        button_location: 'review_page',
+        time_spent_on_page: timeSpent,
+        sections_viewed: Array.from(viewedSections),
+        has_viewed_all_sections: viewedSections.size === Object.keys(metrics).length
+      }
     })
   }
 
   // Track professional consultation request
   const handleConsultationRequest = () => {
-    trackEvent('feature_used', {
-      feature_name: 'feedback_action',
-      action: 'requested_consultation',
-      cta_type: 'button'
+    const timeSpent = Math.floor((Date.now() - pageLoadTime) / 1000)
+    
+    trackEvent('feedback_review_interaction', {
+      feedback_id: fileName,
+      interaction_type: 'consult_expert',
+      interaction_context: {
+        button_location: 'review_page',
+        time_spent_on_page: timeSpent,
+        sections_viewed: Array.from(viewedSections),
+        has_viewed_all_sections: viewedSections.size === Object.keys(metrics).length
+      }
     })
   }
 
